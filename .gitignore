@@ -1,0 +1,6 @@
+# testing artifacts
+cookie.txt
+
+#env files
+backend/.env
+frontend/.env
