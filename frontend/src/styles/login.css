@@ -1,4 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
 body.route-login {
-	background-color: gray;
+	background-color: #ffffff;
+}
+
+
+
+/*Przycisk przełączania pomiędzy logowaniem a rejestracją*/
+body.route-login .auth-switch-btn {
+  background-color: #ffffff ;
+  color: #828282 ;
+  border: none ;
+  border-bottom: 4px solid #828282 ;
+  border-radius: 0 ;
+  box-shadow: none ;
+  padding: 8px 30px;
+  font-size: x-large;
+  font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin-top: 5%;
+  
+}
+
+body.route-login .auth-switch-btn.is-active {
+  color: #000000 !important;
+    border-bottom: 4px solid #000000 ;
+
+}
+
+/*przyciski logowania i rejestracji*/
+body.route-login .loginButton {
+  background-color: #818181;
+  color: #ffffff;
+  font-size: large;
+  font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  margin-top: 5%;
+
+}
+
+body.route-login .loginButton:hover {
+  background-color: black;
+}
+
+/* Responsywność skibidi*/
+@media (max-width: 600px) {
+  body.route-login .auth-switch {
+    gap: 8px;
+  }
+
+  body.route-login .auth-switch-btn {
+    font-size: large;
+    padding: 6px 12px;
+  }
+
+  body.route-login .loginButton {
+    width: 100%;
+  }
+
+  body.route-login .loginHeader {
+    font-size: 1.75rem; 
+  }
 }
 
