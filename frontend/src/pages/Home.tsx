@@ -1,3 +1,4 @@
+import '../styles/home.css'
 import { Button, Container, Stack, Typography } from '@mui/material'
 import { useAuth } from '../state/AuthContext'
 import { useNavigate } from 'react-router-dom'

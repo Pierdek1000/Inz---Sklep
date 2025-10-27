@@ -1,7 +1,9 @@
+import '../styles/login.css'
 import { useState } from 'react'
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from '@mui/material'
 import { useAuth } from '../state/AuthContext'
 import { useNavigate } from 'react-router-dom'
+
 
 export default function LoginPage() {
   const { login, register, error } = useAuth()
