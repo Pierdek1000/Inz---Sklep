@@ -19,7 +19,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.9.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@types/multer": "^1.4.12"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -28,6 +29,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.19.2"
+    "mongoose": "^8.19.2",
+    "multer": "^1.4.5-lts.1"
   }
 }

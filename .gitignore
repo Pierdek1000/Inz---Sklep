@@ -4,3 +4,7 @@ cookie.txt
 #env files
 backend/.env
 frontend/.env
+
+# uploaded images
+backend/uploads/
+uploads/

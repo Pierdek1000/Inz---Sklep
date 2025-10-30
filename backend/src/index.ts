@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import express from "express";
+import path from "path";
 import cors from "cors";
 import type { CorsOptions } from "cors";
 import cookieParser from "cookie-parser";
@@ -39,6 +40,8 @@ app.get("/api/health", (_req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+// Static files for uploaded images
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
 const start = async () => {
   await connectDB();
