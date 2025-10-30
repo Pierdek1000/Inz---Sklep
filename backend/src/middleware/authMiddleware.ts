@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { User } from "../models/userModel";
 
 export interface AuthPayload {
   id: string;
@@ -16,4 +17,21 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   } catch (err) {
     return res.status(401).json({ message: "Nieautoryzowany" });
   }
+};
+
+export const requireRole = (roles: Array<"admin" | "seller">) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = (req as any).user as { id: string } | undefined;
+      if (!user?.id) return res.status(401).json({ message: "Brak autoryzacji" });
+      const dbUser = await User.findById(user.id).select("role");
+      if (!dbUser) return res.status(401).json({ message: "Nieautoryzowany" });
+      if (!roles.includes(dbUser.role as any)) {
+        return res.status(403).json({ message: "Brak uprawnień" });
+      }
+      next();
+    } catch (err) {
+      return res.status(401).json({ message: "Nieautoryzowany" });
+    }
+  };
 };

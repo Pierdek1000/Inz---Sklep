@@ -5,6 +5,7 @@ import type { CorsOptions } from "cors";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db";
 import authRoutes from "./routes/authRoutes";
+import productRoutes from "./routes/productRoutes";
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.get("/api/health", (_req, res) => {
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
 
 const start = async () => {
   await connectDB();

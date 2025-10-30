@@ -48,7 +48,7 @@ export const register = async (req: Request, res: Response) => {
     setAuthCookie(res, token);
 
     return res.status(201).json({
-      user: { id: user._id, username: user.username, email: user.email },
+      user: { id: user._id, username: user.username, email: user.email, role: user.role },
     });
   } catch (err) {
     console.error("Register error", err);
@@ -80,7 +80,7 @@ export const login = async (req: Request, res: Response) => {
     setAuthCookie(res, token);
 
     return res.json({
-      user: { id: user._id, username: user.username, email: user.email },
+      user: { id: user._id, username: user.username, email: user.email, role: user.role },
     });
   } catch (err) {
     console.error("Login error", err);
@@ -100,9 +100,9 @@ export const me = async (req: Request, res: Response) => {
     return res.status(401).json({ message: "Brak autoryzacji" });
   }
 
-  const dbUser = await User.findById(user.id).select("_id username email");
+  const dbUser = await User.findById(user.id).select("_id username email role");
   if (!dbUser) {
     return res.status(404).json({ message: "Użytkownik nie znaleziony" });
   }
-  return res.json({ user: { id: dbUser._id, username: dbUser.username, email: dbUser.email } });
+  return res.json({ user: { id: dbUser._id, username: dbUser.username, email: dbUser.email, role: dbUser.role } });
 };

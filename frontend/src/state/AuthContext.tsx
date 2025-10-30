@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
-export type User = { id: string; username: string; email: string } | null
+export type User = { id: string; username: string; email: string; role: 'user' | 'admin' | 'seller' } | null
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
 
