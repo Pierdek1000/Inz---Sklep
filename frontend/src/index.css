@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+:root {
+	--app-font: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Globalna czcionka Montserrat w całej aplikacji (w tym w komponentach MUI) */
+html, body, #root {
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: var(--app-font) !important;
+}
+
+/* Nadpisanie typografii MUI i przycisków, aby używały Montserrat */
+.MuiTypography-root,
+.MuiButton-root,
+button,
+input,
+textarea {
+	font-family: var(--app-font) !important;
+}
+

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Alert, Box, Breadcrumbs, Button, Chip, Divider, IconButton, Skeleton, Stack, Typography } from '@mui/material'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import AddIcon from '@mui/icons-material/Add'
+import RemoveIcon from '@mui/icons-material/Remove'
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
 
@@ -29,12 +31,12 @@ export default function ProductDetailsPage() {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [zoomed, setZoomed] = useState(false)
   const [origin, setOrigin] = useState<string>('center center')
+  const [qty, setQty] = useState<number>(1)
 
   useEffect(() => {
     let abort = false
     setLoading(true)
     setError(null)
-  setData(null)
   setIdx(0)
     fetch(`${API_BASE}/api/products/${encodeURIComponent(idOrSlug)}`)
       .then(async (res) => {
@@ -77,10 +79,12 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     setZoomed(false)
     setOrigin('center center')
+    setQty(1)
   }, [image])
 
   return (
     <Box sx={{ py: 3 }}>
+      {/* Nawigacja okruszkowa (breadcrumbs) */}
       <Breadcrumbs sx={{ mb: 2 }}>
         <Button onClick={() => navigate('/products')}>Produkty</Button>
         <Typography color="text.secondary">{data?.name || idOrSlug}</Typography>
@@ -88,9 +92,13 @@ export default function ProductDetailsPage() {
 
       {loading ? (
         <Stack spacing={2}>
+            {/* Szczegóły produktu */}
           <Skeleton variant="rectangular" height={360} />
+              {/* Nazwa produktu */}
           <Skeleton variant="text" height={40} />
+              {/* Cena */}
           <Skeleton variant="text" height={24} />
+              {/* Etykiety: kategoria, marka, dostępność */}
           <Skeleton variant="text" height={24} />
           <Skeleton variant="text" height={24} />
         </Stack>
@@ -100,20 +108,25 @@ export default function ProductDetailsPage() {
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
           <Box sx={{ flex: 1 }}>
             {/** Zoom-on-click (lupa) **/}
+            {/* Kontener zdjęcia produktu (powiększanie po kliknięciu) */}
             <Box
               ref={containerRef}
               onMouseMove={updateOriginFromMouse}
               onTouchMove={updateOriginFromTouch}
               sx={{ position: 'relative', width: '100%', maxWidth: 860, mx: 'auto', overflow: 'hidden',
+                height: { xs: 320, sm: 620, md: 800 },
+                bgcolor: 'background.default',
                 '&:hover .image-nav': { opacity: 1, pointerEvents: 'auto' }
               }}>
+              {/* Główne zdjęcie produktu (skalowane, bez przycinania) */}
               <Box
                 component="img"
                 src={image}
                 alt={data.name}
                 onError={(e: any) => { e.currentTarget.src = '/placeholder.svg' }}
                 onClick={() => setZoomed((z) => !z)}
-                sx={{ width: '100%', display: 'block', borderRadius: 1,
+                sx={{ width: '100%', height: '100%', display: 'block', borderRadius: 1,
+                  objectFit: 'contain',
                   transform: `scale(${zoomed ? 2 : 1})`, transformOrigin: origin,
                   transition: 'transform 0.2s ease-out', willChange: 'transform',
                   cursor: zoomed ? 'zoom-out' : 'zoom-in'
@@ -121,6 +134,7 @@ export default function ProductDetailsPage() {
               />
               {images.length > 1 && (
                 <>
+                  {/* Przyciski nawigacji między zdjęciami */}
                   <IconButton aria-label="Poprzednie zdjęcie" size="small" onClick={() => setIdx((i) => (i - 1 + images.length) % images.length)}
                     className="image-nav"
                     sx={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)',
@@ -139,11 +153,12 @@ export default function ProductDetailsPage() {
               )}
             </Box>
             {images.length > 1 && (
-              <Stack direction="row" spacing={1} sx={{ mt: 1, overflowX: 'auto' }}>
+              <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1, overflowX: 'auto', flexWrap: 'nowrap' }}>
+                {/* Miniatury zdjęć */}
                 {images.map((img, i) => (
                   <Box key={i} component="img" src={img} alt={`${data.name} ${i + 1}`} onError={(e: any) => { e.currentTarget.src = '/placeholder.svg' }}
                     onClick={() => setIdx(i)}
-                    sx={{ width: 84, height: 64, objectFit: 'cover', borderRadius: 1, cursor: 'pointer', outline: i === idx ? '3px solid #1976d2' : '3px solid transparent' }} />
+                    sx={{ width: 84, height: 64, objectFit: 'contain', backgroundColor: 'background.default', borderRadius: 1, cursor: 'pointer' }} />
                 ))}
               </Stack>
             )}
@@ -164,8 +179,45 @@ export default function ProductDetailsPage() {
             <Divider sx={{ my: 2 }} />
             
             {data.description && <Typography whiteSpace="pre-wrap">{data.description}</Typography>}
-            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-              <Button variant="contained" size="large" disabled={data.stock <= 0}>Dodaj do koszyka</Button>
+            <Divider sx={{ my: 2 }} />
+
+            {/* Akcje: licznik ilości + przycisk dodania do koszyka (bez funkcjonalności) */}
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+            <Button
+                variant="contained"
+                size="large"
+                disabled={data.stock <= 0}
+                disableElevation
+                sx={{
+                  backgroundColor: '#818181',
+                  color: '#ffffff',
+                  textTransform: 'none',
+                  fontFamily: `'Montserrat','Segoe UI', Tahoma, Geneva, Verdana, sans-serif`,
+                  fontSize: 'large',
+                  px: { xs: 3, sm: 5 },
+                  minWidth: { xs: 180, sm: 440 },
+                  flexShrink: 0,
+                  '&:hover': { backgroundColor: '#000000' }
+                }}
+              >
+                Dodaj do koszyka
+              </Button>
+
+              {/* Licznik ilości */}
+              <Stack direction="row" spacing={1} alignItems="center">
+                <IconButton aria-label="Zmniejsz ilość" size="small"
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  disabled={qty <= 1 || data.stock <= 0}>
+                  <RemoveIcon />
+                </IconButton>
+                <Box sx={{ minWidth: 40, textAlign: 'center', fontWeight: 700 }}>{qty}</Box>
+                <IconButton aria-label="Zwiększ ilość" size="small"
+                  onClick={() => setQty((q) => Math.min(data.stock, q + 1))}
+                  disabled={qty >= data.stock || data.stock <= 0}>
+                  <AddIcon />
+                </IconButton>
+              </Stack>
+
             </Stack>
           </Box>
         
