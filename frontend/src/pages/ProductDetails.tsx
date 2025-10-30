@@ -106,7 +106,7 @@ export default function ProductDetailsPage() {
         <Alert severity="error">{error}</Alert>
       ) : data ? (
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1  }}>
             {/** Zoom-on-click (lupa) **/}
             {/* Kontener zdjęcia produktu (powiększanie po kliknięciu) */}
             <Box
@@ -151,7 +151,7 @@ export default function ProductDetailsPage() {
                   </IconButton>
                 </>
               )}
-            </Box>
+            </Box >
             {images.length > 1 && (
               <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1, overflowX: 'auto', flexWrap: 'nowrap' }}>
                 {/* Miniatury zdjęć */}
@@ -177,10 +177,20 @@ export default function ProductDetailsPage() {
 
 
             <Divider sx={{ my: 2 }} />
-            
-            {data.description && <Typography whiteSpace="pre-wrap">{data.description}</Typography>}
-            <Divider sx={{ my: 2 }} />
+            {/* Opis produktu */}
+            {data.description && (
+              <Typography
+                whiteSpace="pre-wrap"
+                sx={{
+                  maxWidth: { xs: '100%', md: '75ch' },
+                  lineHeight: 1.6
+                }}
+              >
+                {data.description}
+              </Typography>
+            )}
 
+            <Divider sx={{ my: 2 }} />
             {/* Akcje: licznik ilości + przycisk dodania do koszyka (bez funkcjonalności) */}
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
             <Button
