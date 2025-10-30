@@ -5,6 +5,7 @@ import LoginPage from './pages/Login'
 import HomePage from './pages/Home'
 import ProductsPage from './pages/Products'
 import AddProductPage from './pages/AddProduct'
+import ProductDetailsPage from './pages/ProductDetails'
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
 import { useAuth } from './state/AuthContext'
 import { useEffect } from 'react'
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/new" element={<AddProductPage />} />
+          <Route path="/products/:idOrSlug" element={<ProductDetailsPage />} />
         </Routes>
       </Container>
     </Box>

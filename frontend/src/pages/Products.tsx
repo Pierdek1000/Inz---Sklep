@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, Box, Pagination, Skeleton, Stack, TextField, Typography } from '@mui/material'
 import ProductCard, { type Product } from '../components/ProductCard'
+import { useNavigate } from 'react-router-dom'
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
 
@@ -12,6 +13,7 @@ type ApiList = {
 }
 
 export default function ProductsPage() {
+  const navigate = useNavigate()
   const [items, setItems] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -70,7 +72,7 @@ export default function ProductsPage() {
           <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }} gap={2}>
             {items.map((p) => (
               <Box key={p._id}>
-                <ProductCard product={p} />
+                <ProductCard product={p} onClick={(prod) => navigate(`/products/${prod.slug || prod._id}`)} />
               </Box>
             ))}
           </Box>

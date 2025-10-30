@@ -15,11 +15,11 @@ type Props = {
 }
 
 export default function ProductCard({ product, onClick }: Props) {
-  const image = product.images?.[0] || 'https://via.placeholder.com/400x300?text=Brak+zdjecia'
+  const image = product.images?.[0] || '/placeholder.svg'
   return (
     <Card>
       <CardActionArea onClick={() => onClick?.(product)}>
-        <CardMedia component="img" height="180" image={image} alt={product.name} />
+        <CardMedia component="img" height="180" image={image} alt={product.name} onError={(e: any) => { (e.target as HTMLImageElement).src = '/placeholder.svg' }} />
         <CardContent>
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <Typography variant="subtitle1" noWrap>{product.name}</Typography>
