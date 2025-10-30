@@ -1,4 +1,4 @@
-import { Card, CardActionArea, CardContent, CardMedia, Stack, Typography } from '@mui/material'
+import { Card, CardActionArea, CardContent, Stack, Typography, Box } from '@mui/material'
 
 export type Product = {
   _id: string
@@ -17,13 +17,25 @@ type Props = {
 export default function ProductCard({ product, onClick }: Props) {
   const image = product.images?.[0] || '/placeholder.svg'
   return (
-    <Card>
+    <Card sx={{ overflow: 'hidden', borderRadius: 2, boxShadow: 2, '&:hover': { boxShadow: 4 } }}>
       <CardActionArea onClick={() => onClick?.(product)}>
-        <CardMedia component="img" height="180" image={image} alt={product.name} onError={(e: any) => { (e.target as HTMLImageElement).src = '/placeholder.svg' }} />
-        <CardContent>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
-            <Typography variant="subtitle1" noWrap>{product.name}</Typography>
-            <Typography variant="subtitle1" fontWeight={700}>{product.price.toFixed(2)} {product.currency}</Typography>
+        <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', overflow: 'hidden' }}>
+          <Box
+            component="img"
+            src={image}
+            alt={product.name}
+            onError={(e: any) => { (e.target as HTMLImageElement).src = '/placeholder.svg' }}
+            loading="lazy"
+            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .3s',
+              '&:hover': { transform: 'scale(1.06)' } }}
+          />
+        </Box>
+        <CardContent sx={{ py: 1.5 }}>
+          <Stack spacing={0.5}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {product.name}
+            </Typography>
+            <Typography variant="subtitle1" fontWeight={800}>{product.price.toFixed(2)} {product.currency}</Typography>
           </Stack>
         </CardContent>
       </CardActionArea>

@@ -38,15 +38,16 @@ export default function App() {
           {!user && <Button color="inherit" component={Link} to="/login">Logowanie</Button>}
         </Toolbar>
       </AppBar>
-      <Container maxWidth="lg">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/new" element={<AddProductPage />} />
-          <Route path="/products/:idOrSlug" element={<ProductDetailsPage />} />
-        </Routes>
-      </Container>
+      <Routes>
+        <Route path="/" element={<Container maxWidth="lg"><HomePage /></Container>} />
+        <Route path="/login" element={<Container maxWidth="sm"><LoginPage /></Container>} />
+        {/* Pełna szerokość dla listy produktów */}
+        <Route path="/products" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductsPage /></Box>} />
+        {/* Formularz dodawania w węższym układzie */}
+        <Route path="/products/new" element={<Container maxWidth="md"><AddProductPage /></Container>} />
+        {/* Szczegóły produktu mogą iść szerzej, ale z delikatnym paddingiem */}
+        <Route path="/products/:idOrSlug" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductDetailsPage /></Box>} />
+      </Routes>
     </Box>
   )
 }

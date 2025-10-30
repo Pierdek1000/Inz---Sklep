@@ -62,14 +62,16 @@ export default function ProductsPage() {
       {error && <Alert severity="error">{error}</Alert>}
 
       {loading ? (
-        <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }} gap={2}>
+        <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(4, 1fr)' }} gap={2}>
           {Array.from({ length: 12 }).map((_, i) => (
-            <Skeleton key={i} variant="rectangular" height={240} />
+            <Box key={i} sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1' }}>
+              <Skeleton variant="rectangular" sx={{ position: 'absolute', inset: 0 }} />
+            </Box>
           ))}
         </Box>
       ) : (
         <>
-          <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }} gap={2}>
+          <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(4, 1fr)' }} gap={2}>
             {items.map((p) => (
               <Box key={p._id}>
                 <ProductCard product={p} onClick={(prod) => navigate(`/products/${prod.slug || prod._id}`)} />
