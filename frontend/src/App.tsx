@@ -5,6 +5,8 @@ import LoginPage from './pages/Login'
 import HomePage from './pages/Home'
 import ProductsPage from './pages/Products'
 import AddProductPage from './pages/AddProduct'
+import ManageProductsPage from './pages/ManageProducts'
+import ManageCategoriesPage from './pages/ManageCategories'
 import ProductDetailsPage from './pages/ProductDetails'
 import AccountPage from './pages/Account'
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
@@ -34,7 +36,11 @@ export default function App() {
           <Button color="inherit" component={Link} to="/">Strona główna</Button>
           <Button color="inherit" component={Link} to="/products">Produkty</Button>
           {user && (user.role === 'admin' || user.role === 'seller') && (
-            <Button color="inherit" component={Link} to="/products/new">Dodaj produkt</Button>
+            <>
+              <Button color="inherit" component={Link} to="/products/new">Dodaj produkt</Button>
+              <Button color="inherit" component={Link} to="/products/manage">Zarządzaj</Button>
+              <Button color="inherit" component={Link} to="/categories/manage">Kategorie</Button>
+            </>
           )}
           {user && <Button color="inherit" component={Link} to="/account">Konto</Button>}
           {!user && <Button color="inherit" component={Link} to="/login">Logowanie</Button>}
@@ -46,8 +52,12 @@ export default function App() {
   <Route path="/account" element={<Container maxWidth="md"><AccountPage /></Container>} />
         {/* Pełna szerokość dla listy produktów */}
         <Route path="/products" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductsPage /></Box>} />
-        {/* Formularz dodawania w węższym układzie */}
+  {/* Formularz dodawania w węższym układzie */}
         <Route path="/products/new" element={<Container maxWidth="md"><AddProductPage /></Container>} />
+  {/* Panel zarządzania produktami */}
+  <Route path="/products/manage" element={<Container maxWidth="lg"><ManageProductsPage /></Container>} />
+  {/* Panel zarządzania kategoriami */}
+  <Route path="/categories/manage" element={<Container maxWidth="lg"><ManageCategoriesPage /></Container>} />
         {/* Szczegóły produktu mogą iść szerzej, ale z delikatnym paddingiem */}
         <Route path="/products/:idOrSlug" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductDetailsPage /></Box>} />
       </Routes>

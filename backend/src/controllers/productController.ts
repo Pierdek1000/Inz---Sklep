@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { Product, slugify } from "../models/productModel";
 import { Category } from "../models/categoryModel";
+import fs from "fs";
+import path from "path";
 
 type Query = {
   page?: string;
@@ -212,6 +214,40 @@ export const deleteProduct = async (req: Request<{ id: string }>, res: Response)
     const { id } = req.params;
     const product = await Product.findById(id);
     if (!product) return res.status(404).json({ message: "Produkt nie znaleziony" });
+
+    // Attempt to delete local uploaded images if not referenced by other products
+    const uploadDir = path.resolve(process.cwd(), "uploads");
+    const urls = Array.isArray(product.images) ? product.images : [];
+    for (const url of urls) {
+      try {
+        // Only handle our local uploads folder
+        // Accept absolute URL or relative like /uploads/filename
+        let pathname = "";
+        try {
+          const u = new URL(url);
+          pathname = u.pathname || "";
+        } catch {
+          pathname = url || "";
+        }
+        const m = pathname.match(/\/uploads\/([^/?#]+)/);
+        if (!m) continue;
+        const filename = m[1];
+        if (!filename) continue;
+
+        // Check if any other product references this exact URL
+        const count = await Product.countDocuments({ images: url, _id: { $ne: product._id } });
+        if (count > 0) continue;
+
+        const filePath = path.join(uploadDir, filename);
+        if (fs.existsSync(filePath)) {
+          await fs.promises.unlink(filePath).catch(() => {});
+        }
+      } catch (e) {
+        // Ignore file deletion errors per image
+        console.warn("deleteProduct: image cleanup warning", e);
+      }
+    }
+
     await product.deleteOne();
     res.json({ message: "Usunięto" });
   } catch (err) {
