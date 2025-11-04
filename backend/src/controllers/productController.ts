@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Product, slugify } from "../models/productModel";
+import { Category } from "../models/categoryModel";
 
 type Query = {
   page?: string;
@@ -88,6 +89,17 @@ export const getProduct = async (req: Request<{ idOrSlug: string }>, res: Respon
   }
 };
 
+export const listCategories = async (_req: Request, res: Response) => {
+  try {
+    // Now based on Category collection
+    const cats = await Category.find({ isActive: true }).sort({ name: 1 }).lean();
+    res.json({ categories: cats.map((c) => c.name) });
+  } catch (err) {
+    console.error("listCategories error", err);
+    res.status(500).json({ message: "Wewnętrzny błąd serwera" });
+  }
+};
+
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const { name, description, price, stock, category, brand, images, currency } = req.body as {
@@ -105,6 +117,12 @@ export const createProduct = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Brak wymaganych pól (name, price)" });
     }
 
+    // Enforce existing category
+    const catName = (category || "").trim();
+    if (!catName) return res.status(400).json({ message: "Wybierz istniejącą kategorię" });
+    const cat = await Category.findOne({ name: catName, isActive: true });
+    if (!cat) return res.status(400).json({ message: "Wybrana kategoria nie istnieje" });
+
     // generate unique slug
     const baseSlug = slugify(name);
     let finalSlug = baseSlug;
@@ -121,7 +139,7 @@ export const createProduct = async (req: Request, res: Response) => {
       description,
       price,
       stock: stock ?? 0,
-      category,
+      category: cat.name,
       brand,
       images: Array.isArray(images) ? images : [],
       currency: currency || "PLN",
@@ -157,7 +175,13 @@ export const updateProduct = async (req: Request<{ id: string }>, res: Response)
     if (patch.description !== undefined) product.description = patch.description;
     if (patch.price !== undefined) product.price = patch.price;
     if (patch.stock !== undefined) product.stock = patch.stock;
-    if (patch.category !== undefined) product.category = patch.category;
+    if (patch.category !== undefined) {
+      const nextCat = (patch.category || "").trim();
+      if (!nextCat) return res.status(400).json({ message: "Wybierz istniejącą kategorię" });
+      const cat = await Category.findOne({ name: nextCat, isActive: true });
+      if (!cat) return res.status(400).json({ message: "Wybrana kategoria nie istnieje" });
+      product.category = cat.name;
+    }
     if (patch.brand !== undefined) product.brand = patch.brand;
     if (patch.images !== undefined) product.images = Array.isArray(patch.images) ? patch.images : [];
     if (patch.currency !== undefined) product.currency = patch.currency;

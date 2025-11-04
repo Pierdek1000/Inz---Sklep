@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Box, Pagination, Skeleton, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Chip, Pagination, Skeleton, Stack, TextField, Typography } from '@mui/material'
 import ProductCard, { type Product } from '../components/ProductCard'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
 
@@ -14,11 +14,16 @@ type ApiList = {
 
 export default function ProductsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [items, setItems] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(() => {
+    const p = parseInt(new URLSearchParams(location.search).get('page') || '1', 10)
+    return isNaN(p) || p < 1 ? 1 : p
+  })
   const [pages, setPages] = useState(1)
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(() => new URLSearchParams(location.search).get('q') || '')
+  const [category, setCategory] = useState(() => new URLSearchParams(location.search).get('category') || '')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,8 +33,9 @@ export default function ProductsPage() {
     p.set('limit', '12')
     p.set('sort', '-createdAt')
     if (q.trim()) p.set('q', q.trim())
+    if (category.trim()) p.set('category', category.trim())
     return p.toString()
-  }, [page, q])
+  }, [page, q, category])
 
   useEffect(() => {
     let abort = false
@@ -51,12 +57,32 @@ export default function ProductsPage() {
     return () => { abort = true }
   }, [query])
 
+  // Aktualizuj URL przy zmianie zapytania, kategorii lub strony, aby umożliwić linki z Home
+  useEffect(() => {
+    const p = new URLSearchParams(location.search)
+    if (q.trim()) p.set('q', q.trim())
+    else p.delete('q')
+    if (category.trim()) p.set('category', category.trim())
+    else p.delete('category')
+    p.set('page', String(page))
+    const search = p.toString()
+    navigate({ pathname: '/products', search }, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, category, page])
+
   return (
     <Stack spacing={3} sx={{ py: 3 }}>
       <Stack direction="row" spacing={2} alignItems="center">
         <Typography variant="h5">Produkty</Typography>
         <Box sx={{ flex: 1 }} />
         <TextField size="small" placeholder="Szukaj…" value={q} onChange={(e) => { setPage(1); setQ(e.target.value) }} />
+        {category && (
+          <Chip
+            label={category}
+            onDelete={() => { setCategory(''); setPage(1) }}
+            size="small"
+          />
+        )}
       </Stack>
 
       {error && <Alert severity="error">{error}</Alert>}

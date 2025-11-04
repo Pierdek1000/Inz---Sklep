@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
+import categoryRoutes from "./routes/categoryRoutes";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.get("/api/health", (_req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/categories", categoryRoutes);
 // Static files for uploaded images
 app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 

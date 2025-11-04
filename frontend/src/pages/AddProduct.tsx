@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Alert, Box, Button, IconButton, ImageList, ImageListItem, Paper, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Divider, IconButton, ImageList, ImageListItem, Link, Paper, Stack, TextField, Typography, Drawer } from '@mui/material'
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
 import DeleteIcon from '@mui/icons-material/Delete'
+import AddIcon from '@mui/icons-material/Add'
 import { useAuth } from '../state/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -23,6 +25,14 @@ export default function AddProductPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [categories, setCategories] = useState<string[]>([])
+  const [catLoading, setCatLoading] = useState(true)
+  const [catError, setCatError] = useState<string | null>(null)
+  const [newCat, setNewCat] = useState('')
+  const [catDrawerOpen, setCatDrawerOpen] = useState(false)
+
+  type CatOption = { label: string; inputValue?: string; create?: boolean }
+  const filter = createFilterOptions<CatOption>()
 
   const isAllowed = !!user && (user.role === 'admin' || user.role === 'seller')
 
@@ -30,12 +40,32 @@ export default function AddProductPage() {
     if (!isAllowed) navigate('/products')
   }, [isAllowed, navigate])
 
+  // Load categories
+  useEffect(() => {
+    let abort = false
+    setCatLoading(true)
+    setCatError(null)
+    fetch(`${API_BASE}/api/categories`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Nie udało się pobrać kategorii')
+        return res.json() as Promise<{ categories: string[] }>
+      })
+      .then((data) => { if (!abort) setCategories(data.categories || []) })
+      .catch((e) => { if (!abort) setCatError(e?.message || 'Błąd kategorii') })
+      .finally(() => { if (!abort) setCatLoading(false) })
+    return () => { abort = true }
+  }, [])
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setSuccess(null)
     if (!name || price === '' || Number.isNaN(Number(price))) {
       setError('Wprowadź nazwę i prawidłową cenę')
+      return
+    }
+    if (!category.trim()) {
+      setError('Wybierz istniejącą kategorię')
       return
     }
     setLoading(true)
@@ -104,6 +134,29 @@ export default function AddProductPage() {
     }
   }
 
+  const createCategory = async () => {
+    setCatError(null)
+    const trimmed = newCat.trim()
+    if (!trimmed) { setCatError('Podaj nazwę kategorii'); return }
+    try {
+      const res = await fetch(`${API_BASE}/api/categories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name: trimmed })
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) { setCatError(data?.message || 'Nie udało się dodać kategorii'); return }
+      // Refresh categories and select the new one
+      setNewCat('')
+      setCategories((prev) => Array.from(new Set([...prev, data.name || trimmed])).sort())
+      setCategory(data.name || trimmed)
+      setCatDrawerOpen(false)
+    } catch {
+      setCatError('Błąd połączenia przy dodawaniu kategorii')
+    }
+  }
+
   const onSelectFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const list = e.target.files
     if (!list) return
@@ -145,10 +198,99 @@ export default function AddProductPage() {
             <TextField label="Stan" type="number" inputProps={{ step: '1' }}
               value={stock} onChange={(e) => setStock(e.target.value === '' ? '' : Number(e.target.value))} />
           </Stack>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField label="Kategoria" value={category} onChange={(e) => setCategory(e.target.value)} fullWidth />
-            <TextField label="Marka" value={brand} onChange={(e) => setBrand(e.target.value)} fullWidth />
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'flex-end' }}>
+            <Box sx={{ flex: 1 }}>
+              <Autocomplete
+                freeSolo
+                disableClearable
+                selectOnFocus
+                clearOnBlur
+                handleHomeEndKeys
+                loading={catLoading}
+                value={category}
+                onInputChange={(_e, val) => setCategory(val)}
+                onChange={(_e, newVal) => {
+                  if (typeof newVal === 'string') {
+                    setCategory(newVal)
+                    return
+                  }
+                  const opt = newVal as CatOption | null
+                  if (!opt) { setCategory(''); return }
+                  if (opt.create && opt.inputValue) {
+                    setNewCat(opt.inputValue)
+                    setCatError(null)
+                    setCatDrawerOpen(true)
+                    return
+                  }
+                  setCategory(opt.label)
+                }}
+                options={categories.map<CatOption>((c) => ({ label: c }))}
+                filterOptions={(opts, params) => {
+                  const filtered = filter(opts, params)
+                  const { inputValue } = params
+                  const exists = categories.some((c) => c.toLowerCase() === inputValue.trim().toLowerCase())
+                  if (inputValue && !exists) {
+                    filtered.push({ label: `Dodaj "${inputValue}"`, inputValue, create: true })
+                  }
+                  return filtered
+                }}
+                getOptionLabel={(option) => {
+                  if (typeof option === 'string') return option
+                  const opt = option as CatOption
+                  if (opt.inputValue) return opt.inputValue
+                  return opt.label
+                }}
+                renderOption={(props, option) => {
+                  const opt = option as CatOption
+                  return (
+                    <li {...props}>
+                      {opt.create ? (
+                        <>
+                          <AddIcon style={{ marginRight: 8 }} /> {opt.label}
+                        </>
+                      ) : (
+                        opt.label
+                      )}
+                    </li>
+                  )
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Kategoria"
+                    required
+                    error={!!catError}
+                  />
+                )}
+              />
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() => setCatDrawerOpen(true)}
+              disabled={catLoading || !isAllowed}
+              sx={{ whiteSpace: 'nowrap', alignSelf: { xs: 'stretch', sm: 'flex-end' }, height: { xs: 40, sm: 56 } }}
+            >
+              Dodaj kategorię
+            </Button>
           </Stack>
+          <Box sx={{ mt: 0.5 }}>
+            {catError ? (
+              <Typography variant="caption" color="error">{catError}</Typography>
+            ) : (
+              <Typography variant="caption" color="text.secondary">
+                {catLoading ? 'Ładowanie kategorii…' : (categories.length ? 'Wybierz lub wpisz kategorię' : (
+                  <>
+                    Brak kategorii — wpisz nazwę i wybierz opcję dodania lub{' '}
+                    <Link component="button" type="button" onClick={() => setCatDrawerOpen(true)} sx={{ fontSize: 'inherit' }}>
+                      dodaj nową
+                    </Link>
+                  </>
+                ))}
+              </Typography>
+            )}
+          </Box>
+          <TextField label="Marka" value={brand} onChange={(e) => setBrand(e.target.value)} fullWidth />
           <TextField label="Obrazy (URL, oddzielone przecinkami)" value={images} onChange={(e) => setImages(e.target.value)} />
           <Stack spacing={1}>
             <Stack direction="row" spacing={2} alignItems="center">
@@ -181,6 +323,39 @@ export default function AddProductPage() {
           </Stack>
         </Stack>
       </Paper>
+
+      {/* Drawer: Dodawanie kategorii */}
+      <Drawer
+        anchor="right"
+        open={catDrawerOpen}
+        onClose={() => setCatDrawerOpen(false)}
+        PaperProps={{ sx: { width: { xs: '100%', sm: 380 }, p: 2 } }}
+      >
+        <Stack spacing={2} sx={{ height: '100%' }}>
+          <Typography variant="h6">Nowa kategoria</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Utwórz kategorię, aby szybko przypisać ją do produktu.
+          </Typography>
+          <Divider />
+          {!!catError && <Alert severity="error">{catError}</Alert>}
+          <TextField
+            autoFocus
+            label="Nazwa kategorii"
+            value={newCat}
+            onChange={(e) => setNewCat(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); createCategory() } }}
+            disabled={catLoading}
+          />
+          <Stack direction="row" spacing={1}>
+            <Button variant="contained" onClick={createCategory} disabled={catLoading || !isAllowed}>Zapisz</Button>
+            <Button variant="text" onClick={() => setCatDrawerOpen(false)}>Anuluj</Button>
+          </Stack>
+          <Box sx={{ flexGrow: 1 }} />
+          <Typography variant="caption" color="text.secondary">
+            Tylko użytkownicy z rolą „admin” lub „seller” mogą dodawać kategorie.
+          </Typography>
+        </Stack>
+      </Drawer>
     </Box>
   )
 }

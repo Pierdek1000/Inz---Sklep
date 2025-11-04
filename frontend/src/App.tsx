@@ -6,6 +6,7 @@ import HomePage from './pages/Home'
 import ProductsPage from './pages/Products'
 import AddProductPage from './pages/AddProduct'
 import ProductDetailsPage from './pages/ProductDetails'
+import AccountPage from './pages/Account'
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
 import { useAuth } from './state/AuthContext'
 import { useEffect } from 'react'
@@ -35,12 +36,14 @@ export default function App() {
           {user && (user.role === 'admin' || user.role === 'seller') && (
             <Button color="inherit" component={Link} to="/products/new">Dodaj produkt</Button>
           )}
+          {user && <Button color="inherit" component={Link} to="/account">Konto</Button>}
           {!user && <Button color="inherit" component={Link} to="/login">Logowanie</Button>}
         </Toolbar>
       </AppBar>
       <Routes>
         <Route path="/" element={<Container maxWidth="lg"><HomePage /></Container>} />
-        <Route path="/login" element={<Container maxWidth="sm"><LoginPage /></Container>} />
+  <Route path="/login" element={<Container maxWidth="sm"><LoginPage /></Container>} />
+  <Route path="/account" element={<Container maxWidth="md"><AccountPage /></Container>} />
         {/* Pełna szerokość dla listy produktów */}
         <Route path="/products" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductsPage /></Box>} />
         {/* Formularz dodawania w węższym układzie */}

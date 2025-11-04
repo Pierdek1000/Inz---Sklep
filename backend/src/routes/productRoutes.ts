@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listProducts, getProduct, createProduct, updateProduct, deleteProduct } from "../controllers/productController";
+import { listProducts, getProduct, createProduct, updateProduct, deleteProduct, listCategories } from "../controllers/productController";
 import { requireAuth, requireRole } from "../middleware/authMiddleware";
 import { uploadImages } from "../middleware/upload";
 
@@ -7,6 +7,7 @@ const router = Router();
 
 // Public
 router.get("/", listProducts);
+router.get("/categories", listCategories);
 router.get("/:idOrSlug", getProduct);
 
 // Admin/Seller protected
