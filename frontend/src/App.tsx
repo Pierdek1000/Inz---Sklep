@@ -9,13 +9,23 @@ import ManageProductsPage from './pages/ManageProducts'
 import ManageCategoriesPage from './pages/ManageCategories'
 import ProductDetailsPage from './pages/ProductDetails'
 import AccountPage from './pages/Account'
-import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, Button, Container, Toolbar, Typography, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined'
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
+import { useState } from 'react'
 import { useAuth } from './state/AuthContext'
 import { useEffect } from 'react'
 
 export default function App() {
   const { user } = useAuth()
   const location = useLocation()
+  const [anchorElAdmin, setAnchorElAdmin] = useState<null | HTMLElement>(null)
+  const adminOpen = Boolean(anchorElAdmin)
+  const openAdminMenu = (e: React.MouseEvent<HTMLButtonElement>) => setAnchorElAdmin(e.currentTarget)
+  const closeAdminMenu = () => setAnchorElAdmin(null)
 
   useEffect(() => {
     const body = document.body
@@ -37,12 +47,79 @@ export default function App() {
           <Button color="inherit" component={Link} to="/products">Produkty</Button>
           {user && (user.role === 'admin' || user.role === 'seller') && (
             <>
-              <Button color="inherit" component={Link} to="/products/new">Dodaj produkt</Button>
-              <Button color="inherit" component={Link} to="/products/manage">Zarządzaj</Button>
-              <Button color="inherit" component={Link} to="/categories/manage">Kategorie</Button>
+              <Button
+                variant="outlined"
+                color="inherit"
+                className="admin-panel-btn"
+                id="admin-menu-button"
+                aria-controls={adminOpen ? 'admin-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={adminOpen ? 'true' : undefined}
+                onClick={openAdminMenu}
+                endIcon={<ExpandMoreIcon />}
+                sx={{
+                  borderRadius: 9999,
+                  borderColor: 'rgba(255,255,255,0.5)',
+                  color: '#ffffff',
+                  textTransform: 'none',
+                  '&:hover': {
+                    borderColor: '#ffffff',
+                    backgroundColor: 'rgba(255,255,255,0.08)'
+                  }
+                }}
+              >
+                Panel Sprzedawcy
+              </Button>
+              <Menu
+                id="admin-menu"
+                anchorEl={anchorElAdmin}
+                open={adminOpen}
+                onClose={closeAdminMenu}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                PaperProps={{
+                  sx: {
+                    mt: 1.5,
+                    borderRadius: 2,
+                    minWidth: 220,
+                    overflow: 'visible',
+                    filter: 'drop-shadow(0px 6px 12px rgba(0,0,0,0.15))'
+                  }
+                }}
+              >
+                <MenuItem component={Link} to="/products/new" onClick={closeAdminMenu}>
+                  <ListItemIcon>
+                    <AddCircleOutlineIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Dodaj produkt" />
+                </MenuItem>
+                <MenuItem component={Link} to="/products/manage" onClick={closeAdminMenu}>
+                  <ListItemIcon>
+                    <Inventory2OutlinedIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Zarządzaj produktami" />
+                </MenuItem>
+                <MenuItem component={Link} to="/categories/manage" onClick={closeAdminMenu}>
+                  <ListItemIcon>
+                    <CategoryOutlinedIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Zarządzaj kategoriami" />
+                </MenuItem>
+              </Menu>
             </>
           )}
-          {user && <Button color="inherit" component={Link} to="/account">Konto</Button>}
+          {user && (
+            <Button
+              color="inherit"
+              component={Link}
+              to="/account"
+              startIcon={<AccountCircleOutlinedIcon />}
+              sx={{ textTransform: 'none', color: '#ffffff' }}
+              aria-label="Konto"
+            >
+              {user.username}
+            </Button>
+          )}
           {!user && <Button color="inherit" component={Link} to="/login">Logowanie</Button>}
         </Toolbar>
       </AppBar>

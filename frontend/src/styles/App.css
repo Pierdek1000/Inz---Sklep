@@ -1,3 +1,70 @@
 body {
-    margin: 0;
+        margin: 0;
+}
+
+/* Global grey-black theme similar to login, for all routes except the login page */
+body:not(.route-login) .MuiAppBar-root {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Ensure login page navbar is also black */
+body.route-login .MuiAppBar-root {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Buttons */
+body:not(.route-login) .MuiButton-contained {
+    background-color: #818181;
+    color: #ffffff;
+    box-shadow: none;
+}
+body:not(.route-login) .MuiButton-contained:hover {
+    background-color: #000000;
+    box-shadow: none;
+}
+
+body:not(.route-login) .MuiButton-outlined {
+    border-color: #828282;
+    color: #828282;
+}
+body:not(.route-login) .MuiButton-outlined:hover {
+    border-color: #000000;
+    color: #000000;
+}
+
+/* Force white label for the navbar "Panel" button */
+body .admin-panel-btn.MuiButton-outlined {
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+body .admin-panel-btn.MuiButton-outlined:hover {
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+}
+
+/* TextField (outlined) and Select borders + labels */
+body:not(.route-login) .MuiFormLabel-root {
+    color: #000000;
+}
+body:not(.route-login) .MuiFormLabel-root.Mui-focused {
+    color: #000000;
+}
+body:not(.route-login) .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+    border-color: #828282;
+}
+body:not(.route-login) .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #000000;
+}
+body:not(.route-login) .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #000000;
+}
+body:not(.route-login) .MuiInputBase-input {
+    color: #000000;
+}
+
+/* Chips outline subtle */
+body:not(.route-login) .MuiChip-outlined {
+    border-color: #828282;
 }
