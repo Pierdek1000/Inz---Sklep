@@ -2,6 +2,8 @@
 import './styles/App.css'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import LoginPage from './pages/Login'
+import ForgotPasswordPage from './pages/ForgotPassword'
+import ResetPasswordPage from './pages/ResetPassword'
 import HomePage from './pages/Home'
 import ProductsPage from './pages/Products'
 import AddProductPage from './pages/AddProduct'
@@ -126,6 +128,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Container maxWidth="lg"><HomePage /></Container>} />
   <Route path="/login" element={<Container maxWidth="sm"><LoginPage /></Container>} />
+  <Route path="/forgot-password" element={<Container maxWidth="sm"><ForgotPasswordPage /></Container>} />
+  <Route path="/reset-password" element={<Container maxWidth="sm"><ResetPasswordPage /></Container>} />
   <Route path="/account" element={<Container maxWidth="md"><AccountPage /></Container>} />
         {/* Pełna szerokość dla listy produktów */}
         <Route path="/products" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductsPage /></Box>} />

@@ -1,6 +1,6 @@
 import '../styles/login.css'
 import { useState } from 'react'
-import { Alert, Box, Button, Container, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Link, Stack, TextField, Typography } from '@mui/material'
 import { useAuth } from '../state/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -96,6 +96,11 @@ export default function LoginPage() {
               sx={textFieldSx}
               fullWidth
             />
+            {mode === 'login' && (
+              <Box sx={{ textAlign: 'left' }}>
+                <Link href="/forgot-password" underline="hover">Nie pamiętasz hasła?</Link>
+              </Box>
+            )}
             <Button type="submit" className='loginButton' variant="contained" sx={{ width: { xs: '100%', sm: 'auto' }, alignSelf: { xs: 'stretch', sm: 'center' } }}>{mode === 'login' ? 'Zaloguj Się ' : 'Zarejestruj'}</Button>
           </Stack>
         </Box>
