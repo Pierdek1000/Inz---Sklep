@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Alert, Box, Button, Container, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Stack, TextField, Typography, InputAdornment, IconButton } from '@mui/material'
 import { useSearchParams, Link as RouterLink } from 'react-router-dom'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
 
@@ -9,6 +11,8 @@ export default function ResetPasswordPage() {
   const token = useMemo(() => params.get('token') ?? '', [params])
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saving' | 'done' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
 
@@ -58,17 +62,47 @@ export default function ResetPasswordPage() {
         <Stack spacing={2}>
           <TextField
             label="Nowe hasło"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                    onClick={() => setShowPassword((v) => !v)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    edge="end"
+                    size="small"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
           <TextField
             label="Powtórz hasło"
-            type="password"
+            type={showConfirm ? 'text' : 'password'}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showConfirm ? 'Ukryj hasło' : 'Pokaż hasło'}
+                    onClick={() => setShowConfirm((v) => !v)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    edge="end"
+                    size="small"
+                  >
+                    {showConfirm ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
           <Button type="submit" variant="contained" disabled={!token || status === 'saving'}>
             {status === 'saving' ? 'Zapisywanie…' : 'Zmień hasło'}

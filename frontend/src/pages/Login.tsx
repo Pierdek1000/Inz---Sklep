@@ -1,6 +1,8 @@
 import '../styles/login.css'
 import { useState } from 'react'
-import { Alert, Box, Button, Container, Link, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Link, Stack, TextField, Typography, InputAdornment, IconButton } from '@mui/material'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { useAuth } from '../state/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -11,6 +13,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState('')
 
   const textFieldSx = {
@@ -89,12 +92,27 @@ export default function LoginPage() {
             <TextField
               variant='standard'
               label="Hasło"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               sx={textFieldSx}
               fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                      onClick={() => setShowPassword((v) => !v)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
             />
             {mode === 'login' && (
               <Box sx={{ textAlign: 'left' }}>
