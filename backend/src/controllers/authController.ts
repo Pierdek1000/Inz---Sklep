@@ -132,7 +132,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
     const html = `
       <p>Witaj,</p>
-      <p>Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta. Kliknij poniższy link, aby ustawić nowe hasło:</p>
+      <p>Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta. Jeśli to nie ty zignoruj wiadomość. Kliknij poniższy link, aby ustawić nowe hasło:</p>
       <p><a href="${resetUrl}">${resetUrl}</a></p>
       <p>Link wygaśnie za 30 minut. Jeśli to nie Ty, zignoruj tę wiadomość.</p>
     `;
