@@ -1,8 +1,10 @@
 import '../styles/home.css'
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Box, Button, Chip, Container, Skeleton, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Skeleton, Stack, TextField, Typography, InputAdornment } from '@mui/material'
+import SearchIcon from '@mui/icons-material/Search'
 import ProductCard, { type Product } from '../components/ProductCard'
 import { useNavigate } from 'react-router-dom'
+import CategoryLink from '../components/CategoryLink'
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
 
@@ -91,6 +93,13 @@ export default function HomePage() {
                 onKeyDown={(e) => { if (e.key === 'Enter') goSearch() }}
                 size="medium"
                 sx={{ bgcolor: '#fff', borderRadius: 2 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  )
+                }}
               />
               <Button
                 onClick={goSearch}
@@ -112,22 +121,22 @@ export default function HomePage() {
             </Stack>
 
             {!!catError && <Alert severity="warning">{catError}</Alert>}
-            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
               {catLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <Skeleton key={i} variant="rounded" width={96} height={32} />
                 ))
               ) : (
                 categories.map((c) => (
-                  <Chip
+                  <CategoryLink
                     key={c}
                     label={c}
                     onClick={() => navigate(`/products?category=${encodeURIComponent(c)}`)}
                     sx={{
-                      bgcolor: 'rgba(255,255,255,0.85)',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,1)' },
-                      mr: 1, mb: 1,
-                      cursor: 'pointer',
+                      mr: 1,
+                      mb: 1,
+                      fontSize: 15,
+                      color: 'text.primary',
                     }}
                   />
                 ))
@@ -143,7 +152,13 @@ export default function HomePage() {
           <Stack direction="row" alignItems="center">
             <Typography variant="h5" fontWeight={700}>Nowości</Typography>
             <Box sx={{ flex: 1 }} />
-            <Button variant="text" onClick={() => navigate('/products')}>Zobacz wszystkie</Button>
+            <Button
+              variant="text"
+              onClick={() => navigate('/products')}
+              sx={{ color: 'text.primary', '&:hover': { background: 'transparent', color: 'text.secondary' } }}
+            >
+              Zobacz wszystkie
+            </Button>
           </Stack>
 
           {error && <Alert severity="error">{error}</Alert>}

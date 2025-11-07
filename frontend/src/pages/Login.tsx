@@ -115,8 +115,10 @@ export default function LoginPage() {
               }}
             />
             {mode === 'login' && (
-              <Box sx={{ textAlign: 'left' }}>
-                <Link href="/forgot-password" underline="hover">Nie pamiętasz hasła?</Link>
+              <Box sx={{ textAlign: 'left', color: 'text.primary' }}>
+                <Link href="/forgot-password" underline="hover" color="inherit" sx={{ '&:hover': { color: 'text.primary' } }}>
+                  Nie pamiętasz hasła?
+                </Link>
               </Box>
             )}
             <Button type="submit" className='loginButton' variant="contained" sx={{ width: { xs: '100%', sm: 'auto' }, alignSelf: { xs: 'stretch', sm: 'center' } }}>{mode === 'login' ? 'Zaloguj Się ' : 'Zarejestruj'}</Button>
