@@ -6,25 +6,29 @@ import ForgotPasswordPage from './pages/ForgotPassword'
 import ResetPasswordPage from './pages/ResetPassword'
 import HomePage from './pages/Home'
 import ProductsPage from './pages/Products'
+import CartPage from './pages/Cart'
 import AddProductPage from './pages/AddProduct'
 import ManageProductsPage from './pages/ManageProducts'
 import ManageCategoriesPage from './pages/ManageCategories'
 import ProductDetailsPage from './pages/ProductDetails'
 import AccountPage from './pages/Account'
-import { AppBar, Box, Button, Container, Toolbar, Menu, MenuItem, ListItemIcon, ListItemText, IconButton, Divider } from '@mui/material'
+import { AppBar, Box, Button, Container, Toolbar, Menu, MenuItem, ListItemIcon, ListItemText, IconButton, Divider, Badge } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MenuIcon from '@mui/icons-material/Menu'
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined'
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
 import { useState } from 'react'
 import { useAuth } from './state/AuthContext'
+import { useCart } from './state/CartContext'
 import { useEffect } from 'react'
 import WhiteLogo from '../logo/Biale logo.png'
 
 export default function App() {
   const { user } = useAuth()
+  const { count } = useCart()
   const location = useLocation()
   const [anchorElAdmin, setAnchorElAdmin] = useState<null | HTMLElement>(null)
   const [anchorElMobile, setAnchorElMobile] = useState<null | HTMLElement>(null)
@@ -75,6 +79,11 @@ export default function App() {
           <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
             <Button color="inherit" component={Link} to="/">Strona główna</Button>
             <Button color="inherit" component={Link} to="/products">Produkty</Button>
+            <IconButton color="inherit" component={Link} to="/cart" aria-label="Koszyk">
+              <Badge color="secondary" badgeContent={count} overlap="circular" invisible={count <= 0}>
+                <ShoppingCartOutlinedIcon />
+              </Badge>
+            </IconButton>
             {user && (user.role === 'admin' || user.role === 'seller') && (
               <>
                 <Button
@@ -192,6 +201,9 @@ export default function App() {
             <MenuItem component={Link} to="/products" onClick={closeMobileMenu}>
               <ListItemText primary="Produkty" />
             </MenuItem>
+            <MenuItem component={Link} to="/cart" onClick={closeMobileMenu}>
+              <ListItemText primary="Koszyk" />
+            </MenuItem>
             {user && (user.role === 'admin' || user.role === 'seller') && (
               <>
                 <Divider sx={{ my: 0.5 }} />
@@ -237,6 +249,7 @@ export default function App() {
   <Route path="/forgot-password" element={<Container maxWidth="sm"><ForgotPasswordPage /></Container>} />
   <Route path="/reset-password" element={<Container maxWidth="sm"><ResetPasswordPage /></Container>} />
   <Route path="/account" element={<Container maxWidth="md"><AccountPage /></Container>} />
+  <Route path="/cart" element={<Container maxWidth="lg"><CartPage /></Container>} />
         {/* Pełna szerokość dla listy produktów */}
         <Route path="/products" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductsPage /></Box>} />
   {/* Formularz dodawania w węższym układzie */}

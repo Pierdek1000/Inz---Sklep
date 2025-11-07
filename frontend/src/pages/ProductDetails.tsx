@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Alert, Box, Breadcrumbs, Button, Chip, Divider, IconButton, Skeleton, Stack, Typography, Rating } from '@mui/material'
+import { Alert, Box, Breadcrumbs, Button, Chip, Divider, IconButton, Skeleton, Stack, Typography, Rating, Snackbar } from '@mui/material'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import { useAuth } from '../state/AuthContext'
+import { useCart } from '../state/CartContext'
+import MuiAlert from '@mui/material/Alert'
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
 
@@ -36,6 +38,8 @@ export default function ProductDetailsPage() {
   const [origin, setOrigin] = useState<string>('center center')
   const [qty, setQty] = useState<number>(1)
   const { user } = useAuth()
+  const { addItem } = useCart()
+  const [addedOpen, setAddedOpen] = useState(false)
   const [myRating, setMyRating] = useState<number | null>(null)
   const [ratingSaving, setRatingSaving] = useState(false)
   const [ratingError, setRatingError] = useState<string | null>(null)
@@ -147,6 +151,7 @@ export default function ProductDetailsPage() {
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : data ? (
+        <>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
           <Box sx={{ flex: 1  }}>
             {/** Zoom-on-click (lupa) **/}
@@ -260,11 +265,12 @@ export default function ProductDetailsPage() {
             <Divider sx={{ my: 2 }} />
             {/* Akcje: licznik ilości + przycisk dodania do koszyka (bez funkcjonalności) */}
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
-            <Button
+              <Button
                 variant="contained"
                 size="large"
                 disabled={data.stock <= 0}
                 disableElevation
+                onClick={() => { addItem(data, qty); setAddedOpen(true) }}
                 sx={{
                   backgroundColor: '#818181',
                   color: '#ffffff',
@@ -299,6 +305,17 @@ export default function ProductDetailsPage() {
           </Box>
         
         </Stack>
+        <Snackbar
+          open={addedOpen}
+          autoHideDuration={1800}
+          onClose={() => setAddedOpen(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <MuiAlert onClose={() => setAddedOpen(false)} severity="success" variant="filled" sx={{ width: '100%' }}>
+            Dodano do koszyka: {data?.name} x{qty}
+          </MuiAlert>
+        </Snackbar>
+        </>
       ) : null}
     </Box>
   )
