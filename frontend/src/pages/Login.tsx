@@ -1,10 +1,11 @@
 import '../styles/login.css'
 import { useState } from 'react'
-import { Alert, Box, Button, Container, Link, Stack, TextField, Typography, InputAdornment, IconButton } from '@mui/material'
+import { Alert, Box, Button, Container, Link, Stack, TextField, InputAdornment, IconButton } from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { useAuth } from '../state/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import BlackLogo from '../../logo/Czarne logo.png'
 
 
 export default function LoginPage() {
@@ -37,7 +38,19 @@ export default function LoginPage() {
   return (
     <Container maxWidth="sm" sx={{ textAlign: 'center', mt: { xs: 4, sm: 8 }, px: { xs: 2, sm: 0 } }}>
       <Stack spacing={{ xs: 2, sm: 3 }} alignItems="stretch">
-        <Typography className='loginHeader' variant="h4" sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>{mode === 'login' ? 'Zmienić na zdjęcie' : 'Rejestracja'}</Typography> 
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Box
+            component="img"
+            src={BlackLogo}
+            alt={'Logo (Czarne)'}
+            sx={{
+              height: { xs: 100, sm: 180 },
+              width: 'auto',
+              objectFit: 'contain'
+            }}
+            loading="lazy"
+          />
+        </Box>
 
         <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} justifyContent="center" className="auth-switch" sx={{ flexWrap: 'wrap', rowGap: 1 }}>
           <Button

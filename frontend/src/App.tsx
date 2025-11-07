@@ -11,8 +11,9 @@ import ManageProductsPage from './pages/ManageProducts'
 import ManageCategoriesPage from './pages/ManageCategories'
 import ProductDetailsPage from './pages/ProductDetails'
 import AccountPage from './pages/Account'
-import { AppBar, Box, Button, Container, Toolbar, Typography, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import { AppBar, Box, Button, Container, Toolbar, Menu, MenuItem, ListItemIcon, ListItemText, IconButton, Divider } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import MenuIcon from '@mui/icons-material/Menu'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined'
@@ -20,14 +21,19 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import { useState } from 'react'
 import { useAuth } from './state/AuthContext'
 import { useEffect } from 'react'
+import WhiteLogo from '../logo/Biale logo.png'
 
 export default function App() {
   const { user } = useAuth()
   const location = useLocation()
   const [anchorElAdmin, setAnchorElAdmin] = useState<null | HTMLElement>(null)
+  const [anchorElMobile, setAnchorElMobile] = useState<null | HTMLElement>(null)
   const adminOpen = Boolean(anchorElAdmin)
+  const mobileOpen = Boolean(anchorElMobile)
   const openAdminMenu = (e: React.MouseEvent<HTMLButtonElement>) => setAnchorElAdmin(e.currentTarget)
   const closeAdminMenu = () => setAnchorElAdmin(null)
+  const openMobileMenu = (e: React.MouseEvent<HTMLElement>) => setAnchorElMobile(e.currentTarget)
+  const closeMobileMenu = () => setAnchorElMobile(null)
 
   useEffect(() => {
     const body = document.body
@@ -44,85 +50,185 @@ export default function App() {
     <Box>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>TEST</Typography>
-          <Button color="inherit" component={Link} to="/">Strona główna</Button>
-          <Button color="inherit" component={Link} to="/products">Produkty</Button>
-          {user && (user.role === 'admin' || user.role === 'seller') && (
-            <>
+          <Box
+            component={Link}
+            to="/"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+              color: 'inherit',
+              mr: 2
+            }}
+          >
+            <Box
+              component="img"
+              src={WhiteLogo}
+              alt="Logo"
+              sx={{ height: { xs: 32, sm: 72 }, width: 'auto', mr: 1 }}
+              loading="lazy"
+            />
+
+          </Box>
+          <Box sx={{ flexGrow: 1 }} />
+          {/* Desktop navigation */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+            <Button color="inherit" component={Link} to="/">Strona główna</Button>
+            <Button color="inherit" component={Link} to="/products">Produkty</Button>
+            {user && (user.role === 'admin' || user.role === 'seller') && (
+              <>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  className="admin-panel-btn"
+                  id="admin-menu-button"
+                  aria-controls={adminOpen ? 'admin-menu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={adminOpen ? 'true' : undefined}
+                  onClick={openAdminMenu}
+                  endIcon={<ExpandMoreIcon />}
+                  sx={{
+                    borderRadius: 9999,
+                    borderColor: 'rgba(255,255,255,0.5)',
+                    color: '#ffffff',
+                    textTransform: 'none',
+                    '&:hover': {
+                      borderColor: '#ffffff',
+                      backgroundColor: 'rgba(255,255,255,0.08)'
+                    }
+                  }}
+                >
+                  Panel Sprzedawcy
+                </Button>
+                <Menu
+                  id="admin-menu"
+                  anchorEl={anchorElAdmin}
+                  open={adminOpen}
+                  onClose={closeAdminMenu}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1.5,
+                      borderRadius: 2,
+                      minWidth: 220,
+                      overflow: 'visible',
+                      filter: 'drop-shadow(0px 6px 12px rgba(0,0,0,0.15))'
+                    }
+                  }}
+                >
+                  <MenuItem component={Link} to="/products/new" onClick={closeAdminMenu}>
+                    <ListItemIcon>
+                      <AddCircleOutlineIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Dodaj produkt" />
+                  </MenuItem>
+                  <MenuItem component={Link} to="/products/manage" onClick={closeAdminMenu}>
+                    <ListItemIcon>
+                      <Inventory2OutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Zarządzaj produktami" />
+                  </MenuItem>
+                  <MenuItem component={Link} to="/categories/manage" onClick={closeAdminMenu}>
+                    <ListItemIcon>
+                      <CategoryOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Zarządzaj kategoriami" />
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+            {user && (
               <Button
-                variant="outlined"
                 color="inherit"
-                className="admin-panel-btn"
-                id="admin-menu-button"
-                aria-controls={adminOpen ? 'admin-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={adminOpen ? 'true' : undefined}
-                onClick={openAdminMenu}
-                endIcon={<ExpandMoreIcon />}
-                sx={{
-                  borderRadius: 9999,
-                  borderColor: 'rgba(255,255,255,0.5)',
-                  color: '#ffffff',
-                  textTransform: 'none',
-                  '&:hover': {
-                    borderColor: '#ffffff',
-                    backgroundColor: 'rgba(255,255,255,0.08)'
-                  }
-                }}
+                component={Link}
+                to="/account"
+                startIcon={<AccountCircleOutlinedIcon />}
+                sx={{ textTransform: 'none', color: '#ffffff' }}
+                aria-label="Konto"
               >
-                Panel Sprzedawcy
+                {user.username}
               </Button>
-              <Menu
-                id="admin-menu"
-                anchorEl={anchorElAdmin}
-                open={adminOpen}
-                onClose={closeAdminMenu}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                PaperProps={{
-                  sx: {
-                    mt: 1.5,
-                    borderRadius: 2,
-                    minWidth: 220,
-                    overflow: 'visible',
-                    filter: 'drop-shadow(0px 6px 12px rgba(0,0,0,0.15))'
-                  }
-                }}
-              >
-                <MenuItem component={Link} to="/products/new" onClick={closeAdminMenu}>
+            )}
+            {!user && <Button color="inherit" component={Link} to="/login">Logowanie</Button>}
+          </Box>
+
+          {/* Mobile menu button */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+              color="inherit"
+              aria-label="Otwórz menu"
+              aria-controls={mobileOpen ? 'mobile-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={mobileOpen ? 'true' : undefined}
+              onClick={openMobileMenu}
+              size="large"
+            >
+              <MenuIcon />
+            </IconButton>
+          </Box>
+
+          {/* Mobile menu */}
+          <Menu
+            id="mobile-menu"
+            anchorEl={anchorElMobile}
+            open={mobileOpen}
+            onClose={closeMobileMenu}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            PaperProps={{
+              sx: {
+                mt: 1.5,
+                borderRadius: 2,
+                minWidth: 220,
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 6px 12px rgba(0,0,0,0.15))'
+              }
+            }}
+          >
+            <MenuItem component={Link} to="/" onClick={closeMobileMenu}>
+              <ListItemText primary="Strona główna" />
+            </MenuItem>
+            <MenuItem component={Link} to="/products" onClick={closeMobileMenu}>
+              <ListItemText primary="Produkty" />
+            </MenuItem>
+            {user && (user.role === 'admin' || user.role === 'seller') && (
+              <>
+                <Divider sx={{ my: 0.5 }} />
+                <MenuItem component={Link} to="/products/new" onClick={closeMobileMenu}>
                   <ListItemIcon>
                     <AddCircleOutlineIcon fontSize="small" />
                   </ListItemIcon>
                   <ListItemText primary="Dodaj produkt" />
                 </MenuItem>
-                <MenuItem component={Link} to="/products/manage" onClick={closeAdminMenu}>
+                <MenuItem component={Link} to="/products/manage" onClick={closeMobileMenu}>
                   <ListItemIcon>
                     <Inventory2OutlinedIcon fontSize="small" />
                   </ListItemIcon>
                   <ListItemText primary="Zarządzaj produktami" />
                 </MenuItem>
-                <MenuItem component={Link} to="/categories/manage" onClick={closeAdminMenu}>
+                <MenuItem component={Link} to="/categories/manage" onClick={closeMobileMenu}>
                   <ListItemIcon>
                     <CategoryOutlinedIcon fontSize="small" />
                   </ListItemIcon>
                   <ListItemText primary="Zarządzaj kategoriami" />
                 </MenuItem>
-              </Menu>
-            </>
-          )}
-          {user && (
-            <Button
-              color="inherit"
-              component={Link}
-              to="/account"
-              startIcon={<AccountCircleOutlinedIcon />}
-              sx={{ textTransform: 'none', color: '#ffffff' }}
-              aria-label="Konto"
-            >
-              {user.username}
-            </Button>
-          )}
-          {!user && <Button color="inherit" component={Link} to="/login">Logowanie</Button>}
+              </>
+            )}
+            <Divider sx={{ my: 0.5 }} />
+            {user ? (
+              <MenuItem component={Link} to="/account" onClick={closeMobileMenu}>
+                <ListItemIcon>
+                  <AccountCircleOutlinedIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary={user.username} />
+              </MenuItem>
+            ) : (
+              <MenuItem component={Link} to="/login" onClick={closeMobileMenu}>
+                <ListItemText primary="Logowanie" />
+              </MenuItem>
+            )}
+          </Menu>
         </Toolbar>
       </AppBar>
       <Routes>
