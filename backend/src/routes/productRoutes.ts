@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listProducts, getProduct, createProduct, updateProduct, deleteProduct, listCategories } from "../controllers/productController";
+import { listProducts, getProduct, createProduct, updateProduct, deleteProduct, listCategories, rateProduct, getMyRating } from "../controllers/productController";
 import { requireAuth, requireRole } from "../middleware/authMiddleware";
 import { uploadImages } from "../middleware/upload";
 
@@ -9,6 +9,9 @@ const router = Router();
 router.get("/", listProducts);
 router.get("/categories", listCategories);
 router.get("/:idOrSlug", getProduct);
+// Ratings
+router.post("/:id/ratings", requireAuth, rateProduct);
+router.get("/:id/my-rating", requireAuth, getMyRating);
 
 // Admin/Seller protected
 router.post("/upload", requireAuth, requireRole(["admin", "seller"]), uploadImages.array("images", 8), (req, res) => {

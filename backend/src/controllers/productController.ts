@@ -255,3 +255,69 @@ export const deleteProduct = async (req: Request<{ id: string }>, res: Response)
     res.status(500).json({ message: "Wewnętrzny błąd serwera" });
   }
 };
+
+// Dodawanie/aktualizacja oceny produktu przez zalogowanego użytkownika
+export const rateProduct = async (
+  req: Request<{ id: string }, {}, { value?: number }>,
+  res: Response
+) => {
+  try {
+    const { id } = req.params;
+    const user = (req as any).user as { id: string } | undefined;
+    if (!user?.id) return res.status(401).json({ message: "Nieautoryzowany" });
+
+    const value = Number(req.body?.value);
+    if (!Number.isFinite(value) || value < 1 || value > 5) {
+      return res.status(400).json({ message: "Ocena musi być liczbą 1-5" });
+    }
+
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ message: "Produkt nie znaleziony" });
+
+    const ratings = Array.isArray((product as any).ratings) ? (product as any).ratings : [];
+    const idx = ratings.findIndex((r: any) => String(r.user) === String(user.id));
+    if (idx >= 0) {
+      ratings[idx].value = value;
+      ratings[idx].updatedAt = new Date();
+    } else {
+      ratings.push({ user: user.id, value, createdAt: new Date(), updatedAt: new Date() });
+    }
+    (product as any).ratings = ratings;
+
+    const count = ratings.length;
+    const sum = ratings.reduce((acc: number, r: any) => acc + Number(r.value || 0), 0);
+    product.numReviews = count;
+    product.rating = count ? Math.round((sum / count) * 10) / 10 : 0;
+
+    await product.save();
+
+    res.json({
+      message: "Ocena zapisana",
+      rating: product.rating,
+      numReviews: product.numReviews,
+      myRating: value,
+    });
+  } catch (err) {
+    console.error("rateProduct error", err);
+    res.status(500).json({ message: "Wewnętrzny błąd serwera" });
+  }
+};
+
+// Pobranie oceny danego użytkownika dla produktu
+export const getMyRating = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = (req as any).user as { id: string } | undefined;
+    if (!user?.id) return res.status(401).json({ message: "Nieautoryzowany" });
+
+    const product = await Product.findById(id).select("ratings");
+    if (!product) return res.status(404).json({ message: "Produkt nie znaleziony" });
+
+    const ratings = Array.isArray((product as any).ratings) ? (product as any).ratings : [];
+    const mine = ratings.find((r: any) => String(r.user) === String(user.id));
+    res.json({ value: mine ? Number(mine.value) : null });
+  } catch (err) {
+    console.error("getMyRating error", err);
+    res.status(500).json({ message: "Wewnętrzny błąd serwera" });
+  }
+};

@@ -1,4 +1,4 @@
-import { Card, CardActionArea, CardContent, Stack, Typography, Box } from '@mui/material'
+import { Card, CardActionArea, CardContent, Stack, Typography, Box, Rating } from '@mui/material'
 
 export type Product = {
   _id: string
@@ -7,6 +7,8 @@ export type Product = {
   price: number
   currency: string
   images: string[]
+  rating?: number
+  numReviews?: number
 }
 
 type Props = {
@@ -35,6 +37,12 @@ export default function ProductCard({ product, onClick }: Props) {
             <Typography variant="subtitle1" sx={{ fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {product.name}
             </Typography>
+            {(product.rating != null) && (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Rating name="read-only" value={Number(product.rating) || 0} precision={0.5} size="small" readOnly />
+                <Typography variant="caption" color="text.secondary">({product.numReviews ?? 0})</Typography>
+              </Stack>
+            )}
             <Typography variant="subtitle1" fontWeight={800}>{product.price.toFixed(2)} {product.currency}</Typography>
           </Stack>
         </CardContent>

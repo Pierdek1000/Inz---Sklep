@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IProduct extends Document {
   name: string;
@@ -12,6 +12,12 @@ export interface IProduct extends Document {
   images: string[];
   rating: number;
   numReviews: number;
+  ratings: Array<{
+    user: Types.ObjectId;
+    value: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+  }>;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -39,6 +45,18 @@ const productSchema = new Schema<IProduct>(
     images: { type: [String], default: [] },
     rating: { type: Number, default: 0, min: 0, max: 5 },
     numReviews: { type: Number, default: 0, min: 0 },
+    ratings: {
+      type: [
+        new Schema(
+          {
+            user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+            value: { type: Number, required: true, min: 1, max: 5 },
+          },
+          { _id: false, timestamps: true }
+        ),
+      ],
+      default: [],
+    },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

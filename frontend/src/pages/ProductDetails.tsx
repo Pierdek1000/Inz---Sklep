@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Alert, Box, Breadcrumbs, Button, Chip, Divider, IconButton, Skeleton, Stack, Typography } from '@mui/material'
+import { Alert, Box, Breadcrumbs, Button, Chip, Divider, IconButton, Skeleton, Stack, Typography, Rating } from '@mui/material'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
+import { useAuth } from '../state/AuthContext'
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
 
@@ -19,6 +20,8 @@ type Product = {
   category?: string
   brand?: string
   images: string[]
+  rating?: number
+  numReviews?: number
 }
 
 export default function ProductDetailsPage() {
@@ -32,6 +35,10 @@ export default function ProductDetailsPage() {
   const [zoomed, setZoomed] = useState(false)
   const [origin, setOrigin] = useState<string>('center center')
   const [qty, setQty] = useState<number>(1)
+  const { user } = useAuth()
+  const [myRating, setMyRating] = useState<number | null>(null)
+  const [ratingSaving, setRatingSaving] = useState(false)
+  const [ratingError, setRatingError] = useState<string | null>(null)
 
   useEffect(() => {
     let abort = false
@@ -49,6 +56,18 @@ export default function ProductDetailsPage() {
       .finally(() => { if (!abort) setLoading(false) })
     return () => { abort = true }
   }, [idOrSlug])
+
+  // pobierz własną ocenę po załadowaniu produktu i gdy użytkownik jest zalogowany
+  useEffect(() => {
+    let abort = false
+    if (!data?._id) return
+    if (!user) { setMyRating(null); return }
+    fetch(`${API_BASE}/api/products/${encodeURIComponent(data._id)}/my-rating`, { credentials: 'include' })
+      .then(r => r.json().catch(() => ({})))
+      .then((r: any) => { if (!abort) setMyRating(r?.value ?? null) })
+      .catch(() => {})
+    return () => { abort = true }
+  }, [data?._id, user])
 
   const images = (data?.images?.length ? data.images : ['/placeholder.svg'])
   const image = images[Math.min(idx, images.length - 1)]
@@ -81,6 +100,29 @@ export default function ProductDetailsPage() {
     setOrigin('center center')
     setQty(1)
   }, [image])
+
+  const handleRate = async (_: any, value: number | null) => {
+    if (!data || !user) return
+    if (!value) return
+    setRatingSaving(true)
+    setRatingError(null)
+    try {
+      const res = await fetch(`${API_BASE}/api/products/${encodeURIComponent(data._id)}/ratings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ value })
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(body?.message || 'Nie udało się zapisać oceny')
+      setMyRating(value)
+      setData(d => d ? { ...d, rating: body.rating, numReviews: body.numReviews } : d)
+    } catch (e: any) {
+      setRatingError(e?.message || 'Błąd')
+    } finally {
+      setRatingSaving(false)
+    }
+  }
 
   return (
     <Box sx={{ py: 3 }}>
@@ -173,6 +215,31 @@ export default function ProductDetailsPage() {
                 {data.brand && <Chip label={data.brand} size="small" />}
                 <Chip color={data.stock > 0 ? 'success' : 'default'} label={data.stock > 0 ? `Dostępny (${data.stock})` : 'Niedostępny'} size="small" />
               </Stack>
+              {/* Oceny */}
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Rating
+                  name="product-rating"
+                  value={Number(data.rating) || 0}
+                  precision={0.5}
+                  readOnly
+                  size="small"
+                />
+                <Typography variant="caption" color="text.secondary">{data.rating?.toFixed(1) ?? '0.0'} ({data.numReviews ?? 0} opinii)</Typography>
+              </Stack>
+              {user ? (
+                <Stack spacing={0.5}>
+                  <Typography variant="body2" fontWeight={600}>Twoja ocena:</Typography>
+                  <Rating
+                    name="my-rating"
+                    value={myRating ?? 0}
+                    onChange={handleRate}
+                    disabled={ratingSaving}
+                  />
+                  {ratingError && <Typography variant="caption" color="error">{ratingError}</Typography>}
+                </Stack>
+              ) : (
+                <Typography variant="caption" color="text.secondary">Zaloguj się aby ocenić produkt</Typography>
+              )}
             </Stack>
 
 
