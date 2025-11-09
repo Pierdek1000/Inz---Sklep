@@ -1,4 +1,4 @@
-import { Card, CardActionArea, CardContent, Stack, Typography, Box, Rating, Button, Snackbar, Alert } from '@mui/material'
+import { Card, CardActionArea, CardContent, Stack, Typography, Box, Rating, Button, Snackbar, Alert, Chip } from '@mui/material'
 import { useState } from 'react'
 import { useCart } from '../state/CartContext'
 
@@ -22,11 +22,16 @@ type Props = {
 export default function ProductCard({ product, onClick }: Props) {
   const image = product.images?.[0] || '/placeholder.svg'
   const { addItem } = useCart()
-  const [addedOpen, setAddedOpen] = useState(false)
+  const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' })
+  const outOfStock = (product.stock ?? 0) <= 0
   const handleAdd = (e?: React.MouseEvent) => {
     e?.stopPropagation()
+    if (outOfStock) {
+      setSnack({ open: true, message: 'Brak na stanie', severity: 'error' })
+      return
+    }
     addItem(product, 1)
-    setAddedOpen(true)
+    setSnack({ open: true, message: `Dodano do koszyka: ${product.name} x1`, severity: 'success' })
   }
   return (
     <>
@@ -73,6 +78,9 @@ export default function ProductCard({ product, onClick }: Props) {
                 </Stack>
               )}
               <Typography variant="subtitle1" fontWeight={800}>{product.price.toFixed(2)} {product.currency}</Typography>
+              {outOfStock && (
+                <Chip size="small" label="Brak na stanie" color="default" variant="outlined" sx={{ mt: 0.5 }} />
+              )}
             </Box>
           </Stack>
         </CardContent>
@@ -100,6 +108,7 @@ export default function ProductCard({ product, onClick }: Props) {
             variant="contained"
             size="medium"
             onClick={handleAdd}
+            disabled={outOfStock}
             sx={{
               borderRadius: 0,
               height: '100%',
@@ -107,19 +116,19 @@ export default function ProductCard({ product, onClick }: Props) {
               textTransform: 'none'
             }}
           >
-            Dodaj do koszyka
+            {outOfStock ? 'Brak na stanie' : 'Dodaj do koszyka'}
           </Button>
         </Box>
       </Box>
     </Card>
     <Snackbar
-      open={addedOpen}
+      open={snack.open}
       autoHideDuration={1800}
-      onClose={() => setAddedOpen(false)}
+      onClose={() => setSnack(s => ({ ...s, open: false }))}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >
-      <Alert onClose={() => setAddedOpen(false)} severity="success" variant="filled" sx={{ width: '100%' }}>
-        Dodano do koszyka: {product.name} x1
+      <Alert onClose={() => setSnack(s => ({ ...s, open: false }))} severity={snack.severity} variant="filled" sx={{ width: '100%' }}>
+        {snack.message}
       </Alert>
     </Snackbar>
     </>

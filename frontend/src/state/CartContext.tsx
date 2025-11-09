@@ -52,16 +52,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existing = prev.find(l => l.id === id)
       if (existing) {
         const cap = existing.stock ?? (product as any).stock ?? Infinity
-        const nextQty = Math.min(cap, (existing.quantity || 0) + Math.max(1, qty))
-        return prev.map(l => l.id === id ? { ...l, quantity: nextQty, stock: l.stock ?? (product as any).stock } : l)
+        if (Number.isFinite(cap) && cap <= 0) return prev // out of stock, do nothing
+        const requested = (existing.quantity || 0) + Math.max(1, qty)
+        const nextQty = Math.min(cap, requested)
+        const ensured = Math.max(1, nextQty)
+        return prev.map(l => l.id === id ? { ...l, quantity: ensured, stock: l.stock ?? (product as any).stock } : l)
       }
+      const cap = (product as any).stock ?? Infinity
+      if (Number.isFinite(cap) && cap <= 0) return prev // out of stock, do not add new line
+      const requested = Math.max(1, qty)
+      const allowed = Math.min(cap, requested)
       const line: CartLine = {
         id,
         name: (product as any).name,
         price: (product as any).price,
         currency: (product as any).currency || 'PLN',
         image: (product as any).images?.[0] || (product as any).image,
-        quantity: Math.max(1, Math.min((product as any).stock ?? Infinity, qty)),
+        quantity: allowed,
         stock: (product as any).stock
       }
       return [...prev, line]

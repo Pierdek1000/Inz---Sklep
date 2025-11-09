@@ -107,3 +107,47 @@ export const listMyOrders = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Wewnętrzny błąd serwera' });
   }
 };
+
+type AdminQuery = { page?: string; limit?: string; status?: string; q?: string };
+export const listAllOrders = async (req: Request<{}, {}, {}, AdminQuery>, res: Response) => {
+  try {
+    const { page = '1', limit = '20', status, q } = req.query;
+    const pageNum = Math.max(parseInt(page as string, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit as string, 10) || 20, 1), 100);
+    const filter: any = {};
+    if (status) filter.status = status;
+    if (q) {
+      const regex = new RegExp(String(q), 'i');
+      filter.$or = [
+        { 'shipping.firstName': regex },
+        { 'shipping.lastName': regex },
+        { 'shipping.email': regex },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      Order.find(filter).sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean(),
+      Order.countDocuments(filter),
+    ]);
+    res.json({ data: items, total, page: pageNum, pages: Math.ceil(total / limitNum) || 1 });
+  } catch (err) {
+    console.error('listAllOrders error', err);
+    res.status(500).json({ message: 'Wewnętrzny błąd serwera' });
+  }
+};
+
+export const updateOrderStatus = async (req: Request<{ id: string }, {}, { status?: string }>, res: Response) => {
+  try {
+    const { id } = req.params;
+    const next = String(req.body?.status || '');
+  const allowed = ['new','paid','shipped','delivered','cancelled'];
+    if (!allowed.includes(next)) return res.status(400).json({ message: 'Nieprawidłowy status' });
+    const order = await Order.findById(id);
+    if (!order) return res.status(404).json({ message: 'Zamówienie nie znalezione' });
+    order.status = next as any;
+    await order.save();
+    res.json({ message: 'Status zaktualizowany', status: order.status });
+  } catch (err) {
+    console.error('updateOrderStatus error', err);
+    res.status(500).json({ message: 'Wewnętrzny błąd serwera' });
+  }
+};

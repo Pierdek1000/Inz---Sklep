@@ -9,6 +9,7 @@ import ProductsPage from './pages/Products'
 import CartPage from './pages/Cart'
 import AddProductPage from './pages/AddProduct'
 import ManageProductsPage from './pages/ManageProducts'
+import ManageOrdersPage from './pages/ManageOrders'
 import ManageCategoriesPage from './pages/ManageCategories'
 import AdminUsersPage from './pages/AdminUsers'
 import ProductDetailsPage from './pages/ProductDetails'
@@ -147,6 +148,12 @@ export default function App() {
                     </ListItemIcon>
                     <ListItemText primary="Zarządzaj kategoriami" />
                   </MenuItem>
+                  <MenuItem component={Link} to="/orders/manage" onClick={closeAdminMenu}>
+                    <ListItemIcon>
+                      <Inventory2OutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Zarządzaj zamówieniami" />
+                  </MenuItem>
                   {user && user.role === 'admin' && (
                     <MenuItem component={Link} to="/admin/userrole" onClick={closeAdminMenu}>
                       <ListItemIcon>
@@ -278,6 +285,7 @@ export default function App() {
   <Route path="/products/manage" element={<Container maxWidth="lg"><ManageProductsPage /></Container>} />
   {/* Panel zarządzania kategoriami */}
   <Route path="/categories/manage" element={<Container maxWidth="lg"><ManageCategoriesPage /></Container>} />
+  <Route path="/orders/manage" element={<Container maxWidth="lg"><ManageOrdersPage /></Container>} />
   {/* Szczegóły produktu mogą iść szerzej, ale z delikatnym paddingiem */}
   <Route path="/products/:idOrSlug" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductDetailsPage /></Box>} />
   {/* Admin - role użytkowników */}

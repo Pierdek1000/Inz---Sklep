@@ -24,7 +24,7 @@ export interface IOrder extends Document {
     city: string;
     postal: string;
   };
-  status: 'new' | 'paid' | 'shipped' | 'cancelled';
+  status: 'new' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,7 +53,7 @@ const orderSchema = new Schema<IOrder>({
     city: { type: String, required: true },
     postal: { type: String, required: true },
   },
-  status: { type: String, enum: ['new', 'paid', 'shipped', 'cancelled'], default: 'new' },
+  status: { type: String, enum: ['new', 'paid', 'shipped', 'delivered', 'cancelled'], default: 'new' },
 }, { timestamps: true });
 
 export const Order = mongoose.model<IOrder>('Order', orderSchema);

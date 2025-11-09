@@ -1,5 +1,5 @@
 import '../styles/login.css'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, Box, Button, Container, Link, Stack, TextField, InputAdornment, IconButton } from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
@@ -9,7 +9,7 @@ import BlackLogo from '../../logo/Czarne logo.png'
 
 
 export default function LoginPage() {
-  const { login, register, error } = useAuth()
+  const { login, register, error, user, loading } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
@@ -34,6 +34,13 @@ export default function LoginPage() {
       : await register(username, email, password)
     if (ok) navigate('/')
   }
+
+  // Jeśli zalogowany, przekieruj na stronę główną
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/', { replace: true })
+    }
+  }, [user, loading, navigate])
 
   return (
     <Container maxWidth="sm" sx={{ textAlign: 'center', mt: { xs: 4, sm: 8 }, px: { xs: 2, sm: 0 } }}>
