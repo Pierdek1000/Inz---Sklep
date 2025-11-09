@@ -1,6 +1,6 @@
 
 import './styles/App.css'
-import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import LoginPage from './pages/Login'
 import ForgotPasswordPage from './pages/ForgotPassword'
 import ResetPasswordPage from './pages/ResetPassword'
@@ -31,17 +31,22 @@ import { useEffect } from 'react'
 import WhiteLogo from '../logo/Biale logo.png'
 
 export default function App() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { count } = useCart()
   const location = useLocation()
+  const navigate = useNavigate()
   const [anchorElAdmin, setAnchorElAdmin] = useState<null | HTMLElement>(null)
   const [anchorElMobile, setAnchorElMobile] = useState<null | HTMLElement>(null)
+  const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null)
   const adminOpen = Boolean(anchorElAdmin)
   const mobileOpen = Boolean(anchorElMobile)
+  const accountOpen = Boolean(anchorElAccount)
   const openAdminMenu = (e: React.MouseEvent<HTMLButtonElement>) => setAnchorElAdmin(e.currentTarget)
   const closeAdminMenu = () => setAnchorElAdmin(null)
   const openMobileMenu = (e: React.MouseEvent<HTMLElement>) => setAnchorElMobile(e.currentTarget)
   const closeMobileMenu = () => setAnchorElMobile(null)
+  const openAccountMenu = (e: React.MouseEvent<HTMLButtonElement>) => setAnchorElAccount(e.currentTarget)
+  const closeAccountMenu = () => setAnchorElAccount(null)
 
   useEffect(() => {
     const body = document.body
@@ -166,16 +171,55 @@ export default function App() {
               </>
             )}
             {user && (
-              <Button
-                color="inherit"
-                component={Link}
-                to="/account"
-                startIcon={<AccountCircleOutlinedIcon />}
-                sx={{ textTransform: 'none', color: '#ffffff' }}
-                aria-label="Konto"
-              >
-                {user.username}
-              </Button>
+              <>
+                <Button
+                  color="inherit"
+                  startIcon={<AccountCircleOutlinedIcon />}
+                  sx={{ textTransform: 'none', color: '#ffffff' }}
+                  aria-label="Konto"
+                  id="account-menu-button"
+                  aria-controls={accountOpen ? 'account-menu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={accountOpen ? 'true' : undefined}
+                  onClick={openAccountMenu}
+                >
+                  {user.username}
+                </Button>
+                <Menu
+                  id="account-menu"
+                  anchorEl={anchorElAccount}
+                  open={accountOpen}
+                  onClose={closeAccountMenu}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1.5,
+                      borderRadius: 2,
+                      minWidth: 220,
+                      overflow: 'visible',
+                      filter: 'drop-shadow(0px 6px 12px rgba(0,0,0,0.15))'
+                    }
+                  }}
+                >
+                  <MenuItem component={Link} to="/account" onClick={closeAccountMenu}>
+                    <ListItemIcon>
+                      <AccountCircleOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Konto" />
+                  </MenuItem>
+                  <MenuItem component={Link} to="/account/orders" onClick={closeAccountMenu}>
+                    <ListItemIcon>
+                      <Inventory2OutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Moje zamówienia" />
+                  </MenuItem>
+                  <Divider sx={{ my: 0.5 }} />
+                  <MenuItem onClick={async () => { closeAccountMenu(); await logout(); navigate('/'); }}>
+                    <ListItemText primary="Wyloguj" />
+                  </MenuItem>
+                </Menu>
+              </>
             )}
             {!user && <Button color="inherit" component={Link} to="/login">Logowanie</Button>}
           </Box>

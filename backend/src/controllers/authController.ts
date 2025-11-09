@@ -109,6 +109,35 @@ export const me = async (req: Request, res: Response) => {
   return res.json({ user: { id: dbUser._id, username: dbUser.username, email: dbUser.email, role: dbUser.role } });
 };
 
+// Aktualizacja profilu (username, email) – PATCH /api/auth/me
+export const updateMe = async (req: Request, res: Response) => {
+  try {
+    const authUser = (req as any).user as { id: string } | undefined;
+    if (!authUser?.id) return res.status(401).json({ message: 'Brak autoryzacji' });
+    const { username, email } = req.body as { username?: string; email?: string };
+    if (!username && !email) return res.status(400).json({ message: 'Brak danych do aktualizacji' });
+    const user = await User.findById(authUser.id);
+    if (!user) return res.status(404).json({ message: 'Użytkownik nie znaleziony' });
+    if (username) {
+      const trimmed = username.trim();
+      if (!trimmed) return res.status(400).json({ message: 'Nazwa użytkownika nie może być pusta' });
+      user.username = trimmed;
+    }
+    if (email) {
+      const lower = email.toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lower)) return res.status(400).json({ message: 'Nieprawidłowy email' });
+      const exists = await User.findOne({ email: lower, _id: { $ne: user._id } }).select('_id');
+      if (exists) return res.status(409).json({ message: 'Email jest już zajęty' });
+      user.email = lower;
+    }
+    await user.save();
+    return res.json({ message: 'Profil zaktualizowany', user: { id: user._id, username: user.username, email: user.email, role: user.role } });
+  } catch (err) {
+    console.error('updateMe error', err);
+    return res.status(500).json({ message: 'Wewnętrzny błąd serwera' });
+  }
+};
+
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body as { email?: string };

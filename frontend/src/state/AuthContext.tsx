@@ -12,6 +12,7 @@ type AuthContextType = {
   register: (username: string, email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
   refresh: () => Promise<void>
+  updateProfile: (patch: { username?: string; email?: string }) => Promise<{ ok: boolean; message?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -94,8 +95,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const updateProfile = async (patch: { username?: string; email?: string }) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(patch)
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        return { ok: false, message: data?.message || 'Nie udało się zaktualizować profilu' }
+      }
+      setUser(data.user)
+      return { ok: true }
+    } catch {
+      return { ok: false, message: 'Błąd połączenia' }
+    }
+  }
+
   const value = useMemo<AuthContextType>(
-    () => ({ user, loading, error, login, register, logout, refresh }),
+    () => ({ user, loading, error, login, register, logout, refresh, updateProfile }),
     [user, loading, error]
   )
 
