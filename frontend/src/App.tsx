@@ -10,8 +10,11 @@ import CartPage from './pages/Cart'
 import AddProductPage from './pages/AddProduct'
 import ManageProductsPage from './pages/ManageProducts'
 import ManageCategoriesPage from './pages/ManageCategories'
+import AdminUsersPage from './pages/AdminUsers'
 import ProductDetailsPage from './pages/ProductDetails'
+import CheckoutPage from './pages/Checkout'
 import AccountPage from './pages/Account'
+import MyOrdersPage from './pages/MyOrders'
 import { AppBar, Box, Button, Container, Toolbar, Menu, MenuItem, ListItemIcon, ListItemText, IconButton, Divider, Badge } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MenuIcon from '@mui/icons-material/Menu'
@@ -144,6 +147,14 @@ export default function App() {
                     </ListItemIcon>
                     <ListItemText primary="Zarządzaj kategoriami" />
                   </MenuItem>
+                  {user && user.role === 'admin' && (
+                    <MenuItem component={Link} to="/admin/userrole" onClick={closeAdminMenu}>
+                      <ListItemIcon>
+                        <AccountCircleOutlinedIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText primary="Zarządzanie rolami" />
+                    </MenuItem>
+                  )}
                 </Menu>
               </>
             )}
@@ -225,6 +236,14 @@ export default function App() {
                   </ListItemIcon>
                   <ListItemText primary="Zarządzaj kategoriami" />
                 </MenuItem>
+                {user && user.role === 'admin' && (
+                  <MenuItem component={Link} to="/admin/userrole" onClick={closeMobileMenu}>
+                    <ListItemIcon>
+                      <AccountCircleOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Zarządzanie rolami" />
+                  </MenuItem>
+                )}
               </>
             )}
             <Divider sx={{ my: 0.5 }} />
@@ -249,6 +268,7 @@ export default function App() {
   <Route path="/forgot-password" element={<Container maxWidth="sm"><ForgotPasswordPage /></Container>} />
   <Route path="/reset-password" element={<Container maxWidth="sm"><ResetPasswordPage /></Container>} />
   <Route path="/account" element={<Container maxWidth="md"><AccountPage /></Container>} />
+  <Route path="/account/orders" element={<Container maxWidth="lg"><MyOrdersPage /></Container>} />
   <Route path="/cart" element={<Container maxWidth="lg"><CartPage /></Container>} />
         {/* Pełna szerokość dla listy produktów */}
         <Route path="/products" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductsPage /></Box>} />
@@ -258,8 +278,12 @@ export default function App() {
   <Route path="/products/manage" element={<Container maxWidth="lg"><ManageProductsPage /></Container>} />
   {/* Panel zarządzania kategoriami */}
   <Route path="/categories/manage" element={<Container maxWidth="lg"><ManageCategoriesPage /></Container>} />
-        {/* Szczegóły produktu mogą iść szerzej, ale z delikatnym paddingiem */}
-        <Route path="/products/:idOrSlug" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductDetailsPage /></Box>} />
+  {/* Szczegóły produktu mogą iść szerzej, ale z delikatnym paddingiem */}
+  <Route path="/products/:idOrSlug" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductDetailsPage /></Box>} />
+  {/* Admin - role użytkowników */}
+  <Route path="/admin/userrole" element={<Container maxWidth="lg"><AdminUsersPage /></Container>} />
+  {/* Checkout */}
+  <Route path="/checkout" element={<Container maxWidth="lg"><CheckoutPage /></Container>} />
       </Routes>
     </Box>
   )

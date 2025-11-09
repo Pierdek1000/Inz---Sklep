@@ -40,7 +40,8 @@ export default function AccountPage() {
         {error && <Alert severity="error">{error}</Alert>}
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <Button variant="contained" color="primary" onClick={() => navigate('/')}>Przeglądaj produkty</Button>
+          <Button variant="contained" color="primary" onClick={() => navigate('/products')}>Przeglądaj produkty</Button>
+          <Button variant="outlined" color="primary" onClick={() => navigate('/account/orders')}>Moje zamówienia</Button>
           <Button variant="outlined" color="error" onClick={async () => { await logout(); navigate('/login') }}>Wyloguj</Button>
         </Stack>
       </Stack>

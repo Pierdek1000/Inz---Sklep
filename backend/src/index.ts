@@ -8,6 +8,8 @@ import { connectDB } from "./config/db";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
+import userRoutes from "./routes/userRoutes";
+import orderRoutes from "./routes/orderRoutes";
 
 dotenv.config();
 
@@ -42,6 +44,8 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/orders", orderRoutes);
 // Static files for uploaded images
 app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 

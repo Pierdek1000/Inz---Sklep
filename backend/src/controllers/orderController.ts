@@ -1,0 +1,109 @@
+import { Request, Response } from 'express';
+import { Order } from '../models/orderModel';
+import { Product } from '../models/productModel';
+
+interface CreateOrderBody {
+  items: Array<{ productId: string; quantity: number }>; // client sends product id + quantity
+  paymentMethod: 'cod' | 'transfer';
+  shipping: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    street: string;
+    city: string;
+    postal: string;
+  };
+}
+
+export const createOrder = async (req: Request<{}, {}, CreateOrderBody>, res: Response) => {
+  try {
+    const user = (req as any).user as { id: string } | undefined;
+    const { items, paymentMethod, shipping } = req.body;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Brak pozycji zamówienia' });
+    }
+    if (!paymentMethod || !['cod', 'transfer'].includes(paymentMethod)) {
+      return res.status(400).json({ message: 'Nieprawidłowa metoda płatności' });
+    }
+    const requiredShipping = ['firstName','lastName','email','street','city','postal'];
+    for (const f of requiredShipping) {
+      if (!(shipping as any)?.[f] || String((shipping as any)[f]).trim() === '') {
+        return res.status(400).json({ message: 'Brak wymaganych danych wysyłki' });
+      }
+    }
+
+    // Load products and validate stock
+    const productIds = items.map(i => i.productId);
+    const products = await Product.find({ _id: { $in: productIds }, isActive: true });
+
+    // Map for quick lookup
+    const prodMap = new Map(products.map(p => [String(p._id), p]));
+
+    const orderItems = [] as any[];
+    let total = 0;
+
+    for (const line of items) {
+      const p = prodMap.get(line.productId);
+      if (!p) return res.status(400).json({ message: 'Produkt niedostępny' });
+      const qty = Number(line.quantity);
+      if (!Number.isFinite(qty) || qty < 1) return res.status(400).json({ message: 'Nieprawidłowa ilość' });
+      if (p.stock < qty) return res.status(400).json({ message: `Brak wystarczającego stanu dla produktu: ${p.name}` });
+      orderItems.push({
+        product: p._id,
+        name: p.name,
+        price: p.price,
+        currency: p.currency || 'PLN',
+        quantity: qty,
+        image: p.images?.[0]
+      });
+      total += p.price * qty;
+    }
+
+    // Decrement stock (atomic-ish per product)
+    for (const oi of orderItems) {
+      await Product.findByIdAndUpdate(oi.product, { $inc: { stock: -oi.quantity } });
+    }
+
+    const order = await Order.create({
+      user: user?.id,
+      items: orderItems,
+      total,
+      currency: 'PLN',
+      paymentMethod,
+      shipping,
+    });
+
+    res.status(201).json({
+      message: 'Zamówienie utworzone',
+      orderId: order._id,
+      total: order.total,
+      status: order.status,
+    });
+  } catch (err) {
+    console.error('createOrder error', err);
+    res.status(500).json({ message: 'Wewnętrzny błąd serwera' });
+  }
+};
+
+export const listMyOrders = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user as { id: string } | undefined;
+    if (!user?.id) return res.status(401).json({ message: 'Nieautoryzowany' });
+    const orders = await Order.find({ user: user.id }).sort({ createdAt: -1 }).lean();
+    res.json({
+      data: orders.map(o => ({
+        id: o._id,
+        createdAt: o.createdAt,
+        total: o.total,
+        status: o.status,
+        paymentMethod: o.paymentMethod,
+        items: o.items.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, currency: i.currency, image: i.image }))
+      }))
+    });
+  } catch (err) {
+    console.error('listMyOrders error', err);
+    res.status(500).json({ message: 'Wewnętrzny błąd serwera' });
+  }
+};

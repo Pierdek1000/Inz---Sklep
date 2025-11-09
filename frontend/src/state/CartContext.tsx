@@ -8,6 +8,7 @@ export type CartLine = {
   currency: string
   image?: string
   quantity: number
+  stock?: number
 }
 
 const STORAGE_KEY = 'cart'
@@ -50,7 +51,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const id = (product as any)._id || (product as any).id
       const existing = prev.find(l => l.id === id)
       if (existing) {
-        return prev.map(l => l.id === id ? { ...l, quantity: l.quantity + qty } : l)
+        const cap = existing.stock ?? (product as any).stock ?? Infinity
+        const nextQty = Math.min(cap, (existing.quantity || 0) + Math.max(1, qty))
+        return prev.map(l => l.id === id ? { ...l, quantity: nextQty, stock: l.stock ?? (product as any).stock } : l)
       }
       const line: CartLine = {
         id,
@@ -58,13 +61,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         price: (product as any).price,
         currency: (product as any).currency || 'PLN',
         image: (product as any).images?.[0] || (product as any).image,
-        quantity: Math.max(1, qty)
+        quantity: Math.max(1, Math.min((product as any).stock ?? Infinity, qty)),
+        stock: (product as any).stock
       }
       return [...prev, line]
     })
   }
 
-  const updateQty = (id: string, qty: number) => setItems(prev => prev.map(l => l.id === id ? { ...l, quantity: Math.max(1, qty) } : l))
+  const updateQty = (id: string, qty: number) => setItems(prev => prev.map(l => {
+    if (l.id !== id) return l
+    const cap = l.stock ?? Infinity
+    const clamped = Math.max(1, Math.min(cap, qty))
+    return { ...l, quantity: clamped }
+  }))
   const removeItem = (id: string) => setItems(prev => prev.filter(l => l.id !== id))
   const clear = () => setItems([])
 

@@ -35,3 +35,17 @@ export const requireRole = (roles: Array<"admin" | "seller">) => {
     }
   };
 };
+
+// Opcjonalne dołączenie użytkownika jeśli token jest poprawny; brak błędu gdy brak tokenu
+export const attachUserIfPresent = (req: Request, _res: Response, next: NextFunction) => {
+  try {
+    const token = (req as any).cookies?.token as string | undefined;
+    if (!token) return next();
+    const secret = (process.env.JWT_SECRET as string) || "devsecret";
+    const payload = jwt.verify(token, secret) as AuthPayload;
+    (req as any).user = { id: (payload as any).id };
+  } catch {
+    // ignore invalid token
+  }
+  next();
+};
