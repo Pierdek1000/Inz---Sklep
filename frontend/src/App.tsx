@@ -1,6 +1,7 @@
 
 import './styles/App.css'
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
+import { io, Socket } from 'socket.io-client'
 import LoginPage from './pages/Login'
 import ForgotPasswordPage from './pages/ForgotPassword'
 import ResetPasswordPage from './pages/ResetPassword'
@@ -14,6 +15,8 @@ import ManageCategoriesPage from './pages/ManageCategories'
 import AdminUsersPage from './pages/AdminUsers'
 import ProductDetailsPage from './pages/ProductDetails'
 import CheckoutPage from './pages/Checkout'
+import LiveBroadcastPage from './pages/LiveBroadcast'
+import LiveWatchPage from './pages/LiveWatch'
 import AccountPage from './pages/Account'
 import MyOrdersPage from './pages/MyOrders'
 import { AppBar, Box, Button, Container, Toolbar, Menu, MenuItem, ListItemIcon, ListItemText, IconButton, Divider, Badge } from '@mui/material'
@@ -24,6 +27,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined'
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
+import LiveTvOutlinedIcon from '@mui/icons-material/LiveTvOutlined'
 import { useState } from 'react'
 import { useAuth } from './state/AuthContext'
 import { useCart } from './state/CartContext'
@@ -35,6 +39,7 @@ export default function App() {
   const { count } = useCart()
   const location = useLocation()
   const navigate = useNavigate()
+  const [isLive, setIsLive] = useState(false)
   const [anchorElAdmin, setAnchorElAdmin] = useState<null | HTMLElement>(null)
   const [anchorElMobile, setAnchorElMobile] = useState<null | HTMLElement>(null)
   const [anchorElAccount, setAnchorElAccount] = useState<null | HTMLElement>(null)
@@ -59,6 +64,23 @@ export default function App() {
       : location.pathname.slice(1).replace(/\/+/, '-').replace(/[^a-z0-9\-]/gi, '') || 'page'
     body.classList.add(`route-${segment}`)
   }, [location.pathname])
+
+  
+  useEffect(() => {
+    const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:5000'
+    const s: Socket = io(API_BASE, { withCredentials: true, transports: ['websocket', 'polling'] })
+    const onBroadcaster = () => setIsLive(true)
+    const onEnded = () => setIsLive(false)
+    s.on('broadcaster', onBroadcaster)
+    s.on('broadcaster-ended', onEnded)
+   
+    s.on('disconnect', onEnded)
+    return () => {
+      s.off('broadcaster', onBroadcaster)
+      s.off('broadcaster-ended', onEnded)
+      s.disconnect()
+    }
+  }, [])
   return (
     <Box>
       <AppBar position="static">
@@ -88,6 +110,15 @@ export default function App() {
           <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
             <Button color="inherit" component={Link} to="/">Strona główna</Button>
             <Button color="inherit" component={Link} to="/products">Produkty</Button>
+            <Button
+              color="inherit"
+              component={Link}
+              to="/live/watch"
+              startIcon={<LiveTvOutlinedIcon />}
+              endIcon={isLive ? <Box sx={{ width: 8, height: 8, bgcolor: 'error.main', borderRadius: '50%' }} /> : undefined}
+            >
+              Live
+            </Button>
             <IconButton color="inherit" component={Link} to="/cart" aria-label="Koszyk">
               <Badge color="secondary" badgeContent={count} overlap="circular" invisible={count <= 0}>
                 <ShoppingCartOutlinedIcon />
@@ -158,6 +189,12 @@ export default function App() {
                       <Inventory2OutlinedIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText primary="Zarządzaj zamówieniami" />
+                  </MenuItem>
+                  <MenuItem component={Link} to="/live/broadcast" onClick={closeAdminMenu}>
+                    <ListItemIcon>
+                      <LiveTvOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Nadawaj live" />
                   </MenuItem>
                   {user && user.role === 'admin' && (
                     <MenuItem component={Link} to="/admin/userrole" onClick={closeAdminMenu}>
@@ -263,6 +300,24 @@ export default function App() {
             <MenuItem component={Link} to="/products" onClick={closeMobileMenu}>
               <ListItemText primary="Produkty" />
             </MenuItem>
+            {(user && (user.role === 'admin' || user.role === 'seller')) && (
+              <MenuItem component={Link} to="/live/broadcast" onClick={closeMobileMenu}>
+                <ListItemText primary="Nadawaj" />
+              </MenuItem>
+            )}
+            <MenuItem component={Link} to="/live/watch" onClick={closeMobileMenu}>
+              <ListItemIcon>
+                <LiveTvOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    Live
+                    {isLive && <Box sx={{ width: 8, height: 8, bgcolor: 'error.main', borderRadius: '50%' }} />}
+                  </Box>
+                }
+              />
+            </MenuItem>
             <MenuItem component={Link} to="/cart" onClick={closeMobileMenu}>
               <ListItemText primary="Koszyk" />
             </MenuItem>
@@ -336,6 +391,8 @@ export default function App() {
   <Route path="/admin/userrole" element={<Container maxWidth="lg"><AdminUsersPage /></Container>} />
   {/* Checkout */}
   <Route path="/checkout" element={<Container maxWidth="lg"><CheckoutPage /></Container>} />
+  <Route path="/live/broadcast" element={<Container maxWidth="lg"><LiveBroadcastPage /></Container>} />
+  <Route path="/live/watch" element={<LiveWatchPage />} />
       </Routes>
     </Box>
   )
