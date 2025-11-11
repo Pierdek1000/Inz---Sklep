@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
-import { Box, Container, Paper, Stack, Typography, Alert } from '@mui/material'
+import { Box, Container, Paper, Stack, Typography, Alert, Card, CardContent, CardMedia, Button } from '@mui/material'
 import VideocamOffOutlinedIcon from '@mui/icons-material/VideocamOffOutlined'
 import LiveChat from '../components/LiveChat'
 
@@ -20,6 +20,15 @@ export default function LiveWatchPage() {
   const roleRef = useRef<Role>('idle')
   const pcsRef = useRef<Map<string, RTCPeerConnection>>(new Map())
   const pendingCandidatesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map())
+  const [highlight, setHighlight] = useState<null | {
+    id: string
+    name: string
+    slug: string
+    price: number
+    currency: string
+    image: string | null
+    inStock: boolean
+  }>(null)
 
   const serverUrl = useMemo(() => {
     const fromEnv = (import.meta as any).env?.VITE_API_URL as string | undefined
@@ -51,6 +60,10 @@ export default function LiveWatchPage() {
     s.on('broadcaster', () => {
       console.log('[socket] broadcaster announced')
       if (roleRef.current === 'watcher') s.emit('watcher')
+    })
+
+    s.on('highlight:update', (data: any) => {
+      setHighlight(data || null)
     })
 
     s.on('offer', async (id: string, description: RTCSessionDescriptionInit) => {
@@ -131,12 +144,10 @@ export default function LiveWatchPage() {
   return (
     <Container maxWidth={false} sx={{ py: 2, px: { xs: 2, md: 3 } }}>
       <Stack spacing={2}>
-        <Typography variant="h4">Oglądaj transmisję</Typography>
         {error && <Alert severity="error">{error}</Alert>}
         {/* Usunięto przycisk "Zatrzymaj" na prośbę użytkownika */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 380px', lg: 'minmax(0, 1fr) 420px' }, gap: 2 }}>
           <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 1 }}>Transmisja</Typography>
             <Box sx={{ position: 'relative', width: '100%', height: { xs: '56.25vw', md: '75vh' }, borderRadius: 1, overflow: 'hidden', bgcolor: 'action.hover' }}>
               {/* Obszar wideo 16:9 */}
               <Box sx={{ position: 'absolute', inset: 0 }}>
@@ -157,6 +168,31 @@ export default function LiveWatchPage() {
                 )}
               </Box>
             </Box>
+            {highlight && (
+              <Card variant="outlined" sx={{ mt: 2, display: 'flex', flexDirection: 'row' }}>
+                {highlight.image && (
+                  <CardMedia
+                    component="img"
+                    image={highlight.image}
+                    alt={highlight.name}
+                    sx={{ width: 120, height: 120, objectFit: 'cover' }}
+                  />
+                )}
+                <CardContent sx={{ flex: 1, p: 1.5 }}>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>Prezentowany produkt</Typography>
+                  <Typography variant="subtitle1" noWrap title={highlight.name}>{highlight.name}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    {new Intl.NumberFormat('pl-PL', { style: 'currency', currency: highlight.currency || 'PLN' }).format(highlight.price)}
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="caption" color={highlight.inStock ? 'success.main' : 'error.main'}>
+                      {highlight.inStock ? 'W magazynie' : 'Brak w magazynie'}
+                    </Typography>
+                    <Button href={`/products/${highlight.slug}`} size="small" variant="outlined">Szczegóły</Button>
+                  </Stack>
+                </CardContent>
+              </Card>
+            )}
           </Paper>
           <LiveChat />
         </Box>

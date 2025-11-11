@@ -100,7 +100,7 @@ export default function App() {
               component="img"
               src={WhiteLogo}
               alt="Logo"
-              sx={{ height: { xs: 32, sm: 72 }, width: 'auto', mr: 1 }}
+              sx={{ height: { xs: 32, sm: 62 }, width: 'auto', mr: 1 }}
               loading="lazy"
             />
 
@@ -172,6 +172,12 @@ export default function App() {
                     </ListItemIcon>
                     <ListItemText primary="Dodaj produkt" />
                   </MenuItem>
+                  <MenuItem component={Link} to="/live/broadcast" onClick={closeAdminMenu}>
+                    <ListItemIcon>
+                      <LiveTvOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Nadawaj live" />
+                  </MenuItem>
                   <MenuItem component={Link} to="/products/manage" onClick={closeAdminMenu}>
                     <ListItemIcon>
                       <Inventory2OutlinedIcon fontSize="small" />
@@ -190,12 +196,7 @@ export default function App() {
                     </ListItemIcon>
                     <ListItemText primary="Zarządzaj zamówieniami" />
                   </MenuItem>
-                  <MenuItem component={Link} to="/live/broadcast" onClick={closeAdminMenu}>
-                    <ListItemIcon>
-                      <LiveTvOutlinedIcon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText primary="Nadawaj live" />
-                  </MenuItem>
+
                   {user && user.role === 'admin' && (
                     <MenuItem component={Link} to="/admin/userrole" onClick={closeAdminMenu}>
                       <ListItemIcon>
@@ -376,20 +377,13 @@ export default function App() {
   <Route path="/account" element={<Container maxWidth="md"><AccountPage /></Container>} />
   <Route path="/account/orders" element={<Container maxWidth="lg"><MyOrdersPage /></Container>} />
   <Route path="/cart" element={<Container maxWidth="lg"><CartPage /></Container>} />
-        {/* Pełna szerokość dla listy produktów */}
         <Route path="/products" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductsPage /></Box>} />
-  {/* Formularz dodawania w węższym układzie */}
         <Route path="/products/new" element={<Container maxWidth="md"><AddProductPage /></Container>} />
-  {/* Panel zarządzania produktami */}
   <Route path="/products/manage" element={<Container maxWidth="lg"><ManageProductsPage /></Container>} />
-  {/* Panel zarządzania kategoriami */}
   <Route path="/categories/manage" element={<Container maxWidth="lg"><ManageCategoriesPage /></Container>} />
   <Route path="/orders/manage" element={<Container maxWidth="lg"><ManageOrdersPage /></Container>} />
-  {/* Szczegóły produktu mogą iść szerzej, ale z delikatnym paddingiem */}
   <Route path="/products/:idOrSlug" element={<Box sx={{ px: { xs: 2, sm: 3 } }}><ProductDetailsPage /></Box>} />
-  {/* Admin - role użytkowników */}
   <Route path="/admin/userrole" element={<Container maxWidth="lg"><AdminUsersPage /></Container>} />
-  {/* Checkout */}
   <Route path="/checkout" element={<Container maxWidth="lg"><CheckoutPage /></Container>} />
   <Route path="/live/broadcast" element={<Container maxWidth="lg"><LiveBroadcastPage /></Container>} />
   <Route path="/live/watch" element={<LiveWatchPage />} />
