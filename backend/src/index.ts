@@ -68,23 +68,21 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/chat", chatRoutes);
-// Static files for uploaded images
 app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
-// --- Socket.IO WebRTC sygnalizacja ---
-// Prosty model: jeden nadawca (broadcaster) wielu odbiorców (watchers)
+
 let broadcaster: string | null = null;
 let highlightedProductId: string | null = null;
 
 io.on("connection", (socket: import("socket.io").Socket) => {
   console.log("[socket] connected", socket.id);
 
-  // Jeśli nadawca już istnieje, poinformuj nowych klientów
+ 
   if (broadcaster) {
     socket.emit("broadcaster");
   }
 
-  // Jeśli jest ustawiony prezentowany produkt, doślij jego stan nowemu klientowi
+
   (async () => {
     try {
       if (highlightedProductId) {
@@ -109,9 +107,7 @@ io.on("connection", (socket: import("socket.io").Socket) => {
     broadcaster = socket.id;
     console.log("[socket] broadcaster set", broadcaster);
     socket.broadcast.emit("broadcaster");
-    // Kiedy wchodzi nadawca, wyślij aktualny highlight nowym widzom po podłączeniu
     if (highlightedProductId) {
-      // nic teraz, wyemitujemy on-demand do wszystkich na select
     }
   });
 
@@ -148,7 +144,7 @@ io.on("connection", (socket: import("socket.io").Socket) => {
     }
   });
 
-  // --- Prosty czat tylko dla zalogowanych ---
+ 
   socket.on("chat:send", async (text: string) => {
     try {
       const user = await getSocketUser(socket);
@@ -158,20 +154,19 @@ io.on("connection", (socket: import("socket.io").Socket) => {
       }
       const uid = user._id?.toString?.() || (user as any).id;
       
-      // Sprawdź czy user ma aktywny ban
+
       const ban = await ChatPenalty.findOne({ userId: uid, type: "ban" });
       if (ban) {
         socket.emit("chat:error", { code: "BANNED", until: ban.until || null });
         return;
       }
       
-      // Sprawdź czy user ma aktywny timeout
+  
       const timeout = await ChatPenalty.findOne({ userId: uid, type: "timeout" });
       if (timeout && timeout.until && timeout.until.getTime() > Date.now()) {
         socket.emit("chat:error", { code: "TIMEOUT_UNTIL", until: timeout.until.getTime() });
         return;
       } else if (timeout && timeout.until && timeout.until.getTime() <= Date.now()) {
-        // timeout wygasł, usuń
         await ChatPenalty.deleteOne({ _id: timeout._id });
       }
       
@@ -190,30 +185,30 @@ io.on("connection", (socket: import("socket.io").Socket) => {
     }
   });
 
-  // Chat moderation: timeout user (minutes) by seller/admin
+
   socket.on("chat:timeout", async (payload: { userId?: string; minutes?: number }) => {
     try {
       const actor = await getSocketUser(socket);
       if (!actor || !["admin", "seller"].includes((actor as any).role)) return;
       const target = (payload?.userId || "").trim();
-      // Pozwól na ułamki minut (sekundy), min 1 sekunda (1/60 minuty), max 30 dni
+
       const minutes = Math.max(1/60, Math.min(60 * 24 * 30, Number(payload?.minutes) || 5));
       if (!target) return;
       
       const actorId = actor._id?.toString?.() || (actor as any).id;
       const until = new Date(Date.now() + minutes * 60_000);
       
-      // Usuń istniejące timeouty/bany dla tego użytkownika (zastępujemy)
+
       await ChatPenalty.deleteMany({ userId: target });
       
-      // Utwórz nowy timeout
+
       await ChatPenalty.create({ userId: target, type: "timeout", until, createdBy: actorId });
       
       io.emit("chat:mod:timeout", { userId: target, until: until.getTime() });
     } catch {}
   });
 
-  // Chat moderation: ban user
+
   socket.on("chat:ban", async (payload: { userId?: string }) => {
     try {
       const actor = await getSocketUser(socket);
@@ -223,17 +218,17 @@ io.on("connection", (socket: import("socket.io").Socket) => {
       
       const actorId = actor._id?.toString?.() || (actor as any).id;
       
-      // Usuń istniejące timeouty/bany dla tego użytkownika
+
       await ChatPenalty.deleteMany({ userId: target });
       
-      // Utwórz permanentny ban (bez until)
+  
       await ChatPenalty.create({ userId: target, type: "ban", createdBy: actorId });
       
       io.emit("chat:mod:ban", { userId: target });
     } catch {}
   });
 
-  // Chat moderation: unban user
+ 
   socket.on("chat:unban", async (payload: { userId?: string }) => {
     try {
       const actor = await getSocketUser(socket);
@@ -241,17 +236,17 @@ io.on("connection", (socket: import("socket.io").Socket) => {
       const target = (payload?.userId || "").trim();
       if (!target) return;
       
-      // Usuń wszystkie kary dla tego użytkownika
+
       await ChatPenalty.deleteMany({ userId: target });
       
       io.emit("chat:mod:unban", { userId: target });
     } catch {}
   });
 
-  // --- Prezentowany produkt (highlight) ---
+
   socket.on("highlight:select", async (productId: string) => {
     try {
-      if (socket.id !== broadcaster) return; // tylko nadawca
+      if (socket.id !== broadcaster) return; 
       const prod = await Product.findById(productId).lean();
       if (!prod) {
         socket.emit("highlight:update", null);
@@ -270,7 +265,7 @@ io.on("connection", (socket: import("socket.io").Socket) => {
       };
       io.emit("highlight:update", summary);
     } catch (e) {
-      // ignore
+   
     }
   });
 
@@ -291,7 +286,7 @@ const start = async () => {
 
 start();
 
-// Pomocnicze: pobierz użytkownika z cookie JWT w handshake
+
 function parseCookies(cookieHeader?: string) {
   const out: Record<string, string> = {};
   if (!cookieHeader) return out;

@@ -188,7 +188,7 @@ export default function LiveWatchPage() {
                     <Typography variant="caption" color={highlight.inStock ? 'success.main' : 'error.main'}>
                       {highlight.inStock ? 'W magazynie' : 'Brak w magazynie'}
                     </Typography>
-                    <Button href={`/products/${highlight.slug}`} size="small" variant="outlined">Szczegóły</Button>
+                    <Button href={`/products/${highlight.slug}`} target="_blank" rel="noopener noreferrer" size="small" variant="outlined">Zobacz teraz</Button>
                   </Stack>
                 </CardContent>
               </Card>
