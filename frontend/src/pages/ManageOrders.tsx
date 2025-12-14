@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Box, Button, Chip, Collapse, Container, Divider, FormControl, InputLabel, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, Collapse, Container, Divider, FormControl, InputLabel, MenuItem, Pagination, Paper, Select, Stack, TextField, Typography } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useAuth } from '../state/AuthContext'
 
@@ -23,6 +23,9 @@ export default function ManageOrdersPage() {
   const [status, setStatus] = useState<string>('')
   const [q, setQ] = useState('')
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [limit] = useState(10)
 
   const canManage = !!user && (user.role === 'admin' || user.role === 'seller')
 
@@ -32,10 +35,13 @@ export default function ManageOrdersPage() {
       const params = new URLSearchParams()
       if (status) params.set('status', status)
       if (q.trim()) params.set('q', q.trim())
+      params.set('page', page.toString())
+      params.set('limit', limit.toString())
       const res = await fetch(`${API_BASE}/api/orders?${params.toString()}`, { credentials: 'include' })
       if (!res.ok) throw new Error('Nie udało się pobrać zamówień')
       const data = await res.json()
       setOrders(Array.isArray(data?.data) ? data.data : [])
+      setTotalPages(data?.pages || 1)
     } catch (e: any) {
       setError(e?.message || 'Błąd pobierania')
     } finally {
@@ -47,7 +53,11 @@ export default function ManageOrdersPage() {
     if (!canManage) return
     fetchOrders()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status])
+  }, [status, page])
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value)
+  }
 
   const updateStatus = async (id: string, next: Order['status']) => {
     const prev = orders.slice()
@@ -96,8 +106,8 @@ export default function ManageOrdersPage() {
               <MenuItem value="cancelled">Anulowane</MenuItem>
             </Select>
           </FormControl>
-          <TextField label="Szukaj (imię/nazwisko/email)" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') fetchOrders() }} />
-          <Button variant="outlined" onClick={fetchOrders}>Szukaj</Button>
+          <TextField label="Szukaj (imię/nazwisko/email)" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); fetchOrders() } }} />
+          <Button variant="outlined" onClick={() => { setPage(1); fetchOrders() }}>Szukaj</Button>
         </Stack>
       </Paper>
 
@@ -177,6 +187,17 @@ export default function ManageOrdersPage() {
               </Collapse>
             </Paper>
           ))}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+              showFirstButton
+              showLastButton
+            />
+          </Box>
         </Stack>
       )}
     </Container>
