@@ -21,40 +21,47 @@ import chatRoutes from "./routes/chatRoutes";
 dotenv.config();
 
 const app = express();
+app.use(cors({
+  origin: true, // To sprawia, ¿e backend "odbija" adres frontendu jako dozwolony, zamiast dawaæ '*'
+  credentials: true // To pozwala na przesy³anie ciasteczek i nag³ówków autoryzacyjnych
+}));
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
   cors: {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      const allowed = [process.env.CLIENT_URL || "http://localhost:5173"];
-      if (!origin || allowed.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin)) {
+      // LOGOWANIE - to poka¿e Ci w konsoli serwera, kto próbuje siê po³¹czyæ
+      if (origin) console.log("Próba po³¹czenia Socket.IO z:", origin);
+
+      const allowed = [
+        process.env.CLIENT_URL, 
+        "http://localhost:5173",
+        "https://adrianwojewski.duckdns.org" // <--- TO JEST KLUCZOWE! (musi byæ https)
+      ];
+
+      // Pozwalamy jeœli:
+      // 1. Brak origin (narzêdzia typu Postman)
+      // 2. Origin jest na liœcie allowed
+      // 3. Origin to localhost (dla testów lokalnych)
+      if (
+        !origin || 
+        allowed.includes(origin) || 
+        /^http:\/\/localhost:\d+$/.test(origin)
+      ) {
         callback(null, true);
       } else {
+        console.error("Socket.IO zablokowa³:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true
   }
 });
-
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // CORS setup
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
-const corsOptions: CorsOptions = {
-  origin: (origin, callback) => {
-    const allowed = [CLIENT_URL, "http://localhost:5173"];
-    if (!origin || allowed.includes(origin) || /^http:\/\/localhost:\\d+$/.test(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-};
-app.use(cors(corsOptions));
 
 // Healthcheck
 app.get("/api/health", (_req, res) => {
