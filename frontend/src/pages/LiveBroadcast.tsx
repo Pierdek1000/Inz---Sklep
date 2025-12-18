@@ -11,7 +11,18 @@ type Role = 'idle' | 'broadcaster'
 
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' }
+  { urls: 'stun:stun1.l.google.com:19302' },
+  // Własny serwer TURN na EC2
+  {
+    urls: 'turn:44.217.192.255:3478',
+    username: 'webrtc',
+    credential: 'webrtc123'
+  },
+  {
+    urls: 'turn:44.217.192.255:3478?transport=tcp',
+    username: 'webrtc',
+    credential: 'webrtc123'
+  }
 ]
 
 export default function LiveBroadcastPage() {
